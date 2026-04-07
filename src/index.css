@@ -79,6 +79,7 @@ html {
     padding-bottom: 10vh;
     padding-left: 10vw;
     width: 80vw;
+    min-height: auto;
     box-sizing: content-box;
   }
 
