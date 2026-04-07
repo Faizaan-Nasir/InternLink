@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Job from './Job';
 import SearchIcon from '../assets/search-icon.png';
 
@@ -64,7 +64,23 @@ function getStipendValue(stipend) {
     return Number(stipend.replace(/[^\d]/g, ''));
 }
 
-export default function Opportunities() {
+export default function Opportunities({ supabase }) {
+    const [jobs, setJobs] = useState([]);
+
+    useEffect(() => {
+        const fetchJobs = async () => {
+            const { data, error } = await supabase.from('Internships').select('role,stipend,duration,deadline,min_cgpa,min_year,Companies(name,location)');
+            if (error) {
+                console.error('Error fetching jobs:', error);
+            } else {
+                setJobs(data);
+            }
+        };
+        fetchJobs();
+    }, []);
+
+    console.log(jobs);
+
     const [searchQuery, setSearchQuery] = useState('');
 
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -75,8 +91,8 @@ export default function Opportunities() {
         .split(/\s+/)
         .filter(Boolean);
 
-    const filteredJobs = sampleJobs.filter((job) => {
-        const searchableText = `${job.title} ${job.company} ${job.location}`.toLowerCase();
+    const filteredJobs = jobs.filter((job) => {
+        const searchableText = `${job.role} ${job.Companies.name} ${job.Companies.location}`.toLowerCase();
         const matchesText = textTokens.every((token) => searchableText.includes(token));
         const matchesSalary = minSalary === null || getStipendValue(job.stipend) >= minSalary;
 
@@ -106,8 +122,17 @@ export default function Opportunities() {
             <div className='opportunities-list' role='list' aria-label='Job opportunities'>
                 {filteredJobs.length > 0 ? (
                     filteredJobs.map((job, index) => (
-                        <div className='opportunity-row' key={`${job.title}-${job.company}`}>
-                            <Job {...job} />
+                        <div className='opportunity-row' key={`${job.role}-${job.Companies.name}`}>
+                            <Job
+                                title={job.role}
+                                company={job.Companies.name}
+                                location={job.Companies.location}
+                                stipend={`Rs. ${job.stipend}`}
+                                duration={`${job.duration} months`}
+                                minCgpa={job.min_cgpa}
+                                minEligibility={`Year ${job.min_year}`}
+                                applyBefore={job.deadline}
+                            />
                             {index < filteredJobs.length - 1 ? <hr className='opportunities-divider' /> : null}
                         </div>
                     ))
