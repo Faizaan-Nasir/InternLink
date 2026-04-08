@@ -2,64 +2,6 @@ import { useState, useEffect } from 'react';
 import Job from './Job';
 import SearchIcon from '../assets/search-icon.png';
 
-const sampleJobs = [
-    {
-        title: 'AI/ML Developer Intern',
-        company: 'Microsoft Inc.',
-        skills: ['PyTorch', 'LSTM', 'Cloud Computing'],
-        stipend: 'Rs. 26,000',
-        location: 'Hyderabad',
-        duration: '6 months',
-        applyBefore: 'April 24, 2026',
-        minCgpa: '8.0',
-        minEligibility: 'Year 3',
-    },
-    {
-        title: 'SDE Intern',
-        company: 'Google Inc.',
-        skills: ['Python', 'Java', 'Cyber-Security'],
-        stipend: 'Rs. 24,000',
-        location: 'Bengaluru',
-        duration: '6 months',
-        applyBefore: 'April 30, 2026',
-        minCgpa: '8.5',
-        minEligibility: 'Year 3',
-    },
-    {
-        title: 'Database Engineer',
-        company: 'Oracle Inc.',
-        skills: ['MySQL', 'PostgreSQL', 'Cloud Computing'],
-        stipend: 'Rs. 22,000',
-        location: 'Pune',
-        duration: '5 months',
-        applyBefore: 'May 5, 2026',
-        minCgpa: '7.8',
-        minEligibility: 'Year 2',
-    },
-    {
-        title: 'Frontend Engineer Intern',
-        company: 'Adobe Inc.',
-        skills: ['React', 'JavaScript', 'UI Design'],
-        stipend: 'Rs. 25,000',
-        location: 'Noida',
-        duration: '6 months',
-        applyBefore: 'May 10, 2026',
-        minCgpa: '8.2',
-        minEligibility: 'Year 3',
-    },
-    {
-        title: 'Data Analyst Intern',
-        company: 'Amazon Inc.',
-        skills: ['SQL', 'Excel', 'Data Visualization'],
-        stipend: 'Rs. 23,000',
-        location: 'Chennai',
-        duration: '4 months',
-        applyBefore: 'May 14, 2026',
-        minCgpa: '7.5',
-        minEligibility: 'Year 2',
-    },
-];
-
 function getStipendValue(stipend) {
     return Number(stipend.replace(/[^\d]/g, ''));
 }
@@ -69,7 +11,7 @@ export default function Opportunities({ supabase }) {
 
     useEffect(() => {
         const fetchJobs = async () => {
-            const { data, error } = await supabase.from('Internships').select('role,stipend,duration,deadline,min_cgpa,min_year,Companies(name,location)');
+            const { data, error } = await supabase.from('Internships').select('role,stipend,duration,deadline,min_cgpa,min_year,Companies(name,location),Internship_Skills(Skills(name))');
             if (error) {
                 console.error('Error fetching jobs:', error);
             } else {
@@ -79,7 +21,11 @@ export default function Opportunities({ supabase }) {
         fetchJobs();
     }, []);
 
-    console.log(jobs);
+    jobs.forEach(job => {
+        const skillsSet = new Set();
+        job.Internship_Skills.forEach(skill => skillsSet.add(skill.Skills.name));
+        job.skills = Array.from(skillsSet);
+    });
 
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -132,6 +78,7 @@ export default function Opportunities({ supabase }) {
                                 minCgpa={job.min_cgpa}
                                 minEligibility={`Year ${job.min_year}`}
                                 applyBefore={job.deadline}
+                                skills={job.skills}
                             />
                             {index < filteredJobs.length - 1 ? <hr className='opportunities-divider' /> : null}
                         </div>
