@@ -405,6 +405,34 @@ html {
     box-sizing: border-box;
   }
 
+  .job-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: clamp(0.95rem, 0.95vw, 1.05rem);
+    font-weight: 700;
+    line-height: 1;
+    min-height: 2rem;
+    padding: 0 1.45rem;
+    min-width: 6.4rem;
+    box-sizing: border-box;
+  }
+
+  .job-status-accepted {
+    background-color: #16a34a;
+  }
+
+  .job-status-rejected {
+    background-color: #dc2626;
+  }
+
+  .job-status-waitlist {
+    background-color: #ca8a04;
+  }
+
   .job-apply-button:hover {
     background-color: #2563eb;
   }
@@ -518,7 +546,7 @@ html {
     padding: 0 2.5vw 3.75rem;
     overflow-y: auto;
     height: calc(100% - 5.6rem);
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
   }
@@ -526,6 +554,11 @@ html {
   .opportunity-row {
     width: 100%;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .opportunity-row + .opportunity-row {
+    scroll-margin-top: -4px;
   }
 
   .opportunities-empty {

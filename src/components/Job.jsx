@@ -36,6 +36,10 @@ function formatDeadline(applyBefore) {
   }).format(date);
 }
 
+function isResponseStatus(status) {
+  return status === 'Accepted' || status === 'Rejected' || status === 'Waitlist';
+}
+
 export default function Job({
   title,
   company,
@@ -48,6 +52,8 @@ export default function Job({
   minEligibility,
   status = 'opportunity',
 }) {
+  const showResponseStatus = isResponseStatus(status);
+
   return (
     <article className='job'>
       <div className='job-header'>
@@ -64,7 +70,9 @@ export default function Job({
           ))}
         </div>
 
-        {status !== 'applied' ? (
+        {showResponseStatus ? (
+          <span className={`job-status-pill job-status-${status.toLowerCase()}`}>{status}</span>
+        ) : status !== 'applied' ? (
           <button className='job-apply-button' type='button'>
             apply
           </button>
