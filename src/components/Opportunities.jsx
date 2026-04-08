@@ -98,6 +98,7 @@ export default function Opportunities({ supabase }) {
                                 minEligibility={`Year ${job.min_year}`}
                                 applyBefore={job.deadline}
                                 skills={job.skills}
+                                status='opportunity'
                             />
                             {index < filteredJobs.length - 1 ? <hr className='opportunities-divider' /> : null}
                         </div>

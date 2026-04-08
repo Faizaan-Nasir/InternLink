@@ -46,6 +46,7 @@ export default function Job({
   applyBefore,
   minCgpa,
   minEligibility,
+  status = 'opportunity',
 }) {
   return (
     <article className='job'>
@@ -63,9 +64,11 @@ export default function Job({
           ))}
         </div>
 
-        <button className='job-apply-button' type='button'>
-          apply
-        </button>
+        {status !== 'applied' ? (
+          <button className='job-apply-button' type='button'>
+            apply
+          </button>
+        ) : null}
       </div>
 
       <div className='job-details'>
