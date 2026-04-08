@@ -1,3 +1,41 @@
+function formatStipend(stipend) {
+  const value = typeof stipend === 'number' ? stipend : Number(String(stipend).replace(/[^\d.]/g, ''));
+
+  if (Number.isNaN(value)) {
+    return stipend;
+  }
+
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatCgpa(minCgpa) {
+  const value = typeof minCgpa === 'number' ? minCgpa : Number(minCgpa);
+
+  if (Number.isNaN(value)) {
+    return minCgpa;
+  }
+
+  return value.toFixed(2);
+}
+
+function formatDeadline(applyBefore) {
+  const date = new Date(applyBefore);
+
+  if (Number.isNaN(date.getTime())) {
+    return applyBefore;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
 export default function Job({
   title,
   company,
@@ -33,7 +71,7 @@ export default function Job({
       <div className='job-details'>
         <div className='job-detail-column'>
           <p className='job-detail'>
-            <span className='job-detail-label'>Stipend:</span> {stipend}
+            <span className='job-detail-label'>Stipend:</span> {formatStipend(stipend)}
           </p>
           <p className='job-detail'>
             <span className='job-detail-label'>Location:</span> {location}
@@ -45,13 +83,13 @@ export default function Job({
             <span className='job-detail-label'>Duration:</span> {duration}
           </p>
           <p className='job-detail'>
-            <span className='job-detail-label'>Apply Before:</span> {applyBefore}
+            <span className='job-detail-label'>Apply Before:</span> {formatDeadline(applyBefore)}
           </p>
         </div>
 
         <div className='job-detail-column'>
           <p className='job-detail'>
-            <span className='job-detail-label'>Minimum CGPA:</span> {minCgpa}
+            <span className='job-detail-label'>Minimum CGPA:</span> {formatCgpa(minCgpa)}
           </p>
           <p className='job-detail'>
             <span className='job-detail-label'>Minimum Eligibility:</span> {minEligibility}

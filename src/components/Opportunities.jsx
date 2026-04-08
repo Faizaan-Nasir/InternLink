@@ -3,7 +3,25 @@ import Job from './Job';
 import SearchIcon from '../assets/search-icon.png';
 
 function getStipendValue(stipend) {
-    return Number(stipend.replace(/[^\d]/g, ''));
+    if (typeof stipend === 'number') {
+        return stipend;
+    }
+
+    return Number(String(stipend).replace(/[^\d]/g, ''));
+}
+
+function isActiveDeadline(deadline) {
+    const jobDeadline = new Date(deadline);
+
+    if (Number.isNaN(jobDeadline.getTime())) {
+        return true;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    jobDeadline.setHours(0, 0, 0, 0);
+
+    return jobDeadline >= today;
 }
 
 export default function Opportunities({ supabase }) {
@@ -38,11 +56,12 @@ export default function Opportunities({ supabase }) {
         .filter(Boolean);
 
     const filteredJobs = jobs.filter((job) => {
+        const hasActiveDeadline = isActiveDeadline(job.deadline);
         const searchableText = `${job.role} ${job.Companies.name} ${job.Companies.location}`.toLowerCase();
         const matchesText = textTokens.every((token) => searchableText.includes(token));
         const matchesSalary = minSalary === null || getStipendValue(job.stipend) >= minSalary;
 
-        return matchesText && matchesSalary;
+        return hasActiveDeadline && matchesText && matchesSalary;
     });
 
     return (
@@ -73,7 +92,7 @@ export default function Opportunities({ supabase }) {
                                 title={job.role}
                                 company={job.Companies.name}
                                 location={job.Companies.location}
-                                stipend={`Rs. ${job.stipend}`}
+                                stipend={job.stipend}
                                 duration={`${job.duration} months`}
                                 minCgpa={job.min_cgpa}
                                 minEligibility={`Year ${job.min_year}`}
