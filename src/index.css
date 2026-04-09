@@ -763,11 +763,15 @@ html {
   }
 
   .section-title {
-    margin: 0 0 0.9rem;
+    margin: 0 0 1rem;
     color: rgba(255, 255, 255, 0.95);
-    font-size: 1.18rem;
+    font-size: 1.34rem;
     font-weight: 700;
     line-height: 1.2;
+    text-decoration: underline;
+    text-underline-offset: 0.22rem;
+    text-decoration-thickness: 0.08rem;
+    text-decoration-color: rgba(255, 255, 255, 0.82);
   }
 
   .info-row {

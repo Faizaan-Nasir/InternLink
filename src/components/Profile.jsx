@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AcademicDetailsSection from './Profile-Components/AcademicDetailsSection';
 import ContactSection from './Profile-Components/ContactSection';
 import ResumeSection from './Profile-Components/ResumeSection';
 import SkillsSection from './Profile-Components/SkillsSection';
 
 const SAMPLE_STUDENT = {
-  name: 'Aarav Sharma',
-  email: 'aarav.sharma@iitm.ac.in',
-  university: 'IIT Madras',
-  branch: 'Computer Science and Engineering',
-  year: '3',
-  cgpa: '8.64',
-  phone: '+91 98765 43210',
+  name: 'Loading...',
+  email: 'Loading...',
+  university: 'Loading...',
+  branch: 'Loading...',
+  year: 'Loading...',
+  cgpa: 'Loading...',
+  phone: 'Loading...',
   resume: {
     fileName: 'Aarav_Sharma_Resume.pdf',
     url: '#',
@@ -34,11 +34,35 @@ const AVAILABLE_SKILLS = [
   'Cyber Security',
 ];
 
-export default function Profile() {
+export default function Profile({ supabase }) {
   const [pendingResumeName, setPendingResumeName] = useState('');
   const [resumeName, setResumeName] = useState(SAMPLE_STUDENT.resume.fileName);
-  const [studentSkills, setStudentSkills] = useState(SAMPLE_STUDENT.skills);
+  const [studentSkills, setStudentSkills] = useState([]);
   const [nextSkill, setNextSkill] = useState('');
+  const [student, setStudent] = useState(SAMPLE_STUDENT);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      const { data, error } = await supabase.from('Students').select('*').single();
+      if (error) {
+        console.error('Error fetching student data:', error);
+      } else {
+        data.email = await supabase.auth.getUser().then(({ data }) => data?.user?.email) || null;
+        data.phone = data.ph;
+        data.resume = {
+          fileName: 'Faizaan_Nasir_Resume.pdf',
+          url: '#',
+        };
+        setResumeName('Faizaan_Nasir_Resume.pdf');
+        data.skills = await supabase.from('Student_Skills').select('Skills(name)').then(({ data }) => data.map((item) => item.Skills.name)) || [];
+        setStudentSkills(data.skills);
+        setStudent(data);
+      }
+    };
+
+    fetchStudentData();
+  }, [supabase]);
+
 
   const addSkill = () => {
     if (!nextSkill || studentSkills.includes(nextSkill)) {
@@ -64,26 +88,26 @@ export default function Profile() {
       <section className='profile-page'>
         <div className='profile-wrapper'>
           <div className='profile-header'>
-            <h1 className='profile-name'>{SAMPLE_STUDENT.name}</h1>
+            <h1 className='profile-name'>{student.name}</h1>
             <p className='profile-subtext'>
-              {SAMPLE_STUDENT.branch} • {SAMPLE_STUDENT.university}
+              {student.branch} • {student.university}
             </p>
           </div>
 
           <div className='profile-content'>
             <div className='left-column'>
-              <AcademicDetailsSection student={SAMPLE_STUDENT} />
+              <AcademicDetailsSection student={student} />
               <ResumeSection
                 onUploadResume={uploadPendingResume}
                 pendingResumeName={pendingResumeName}
                 resumeName={resumeName}
-                resumeUrl={SAMPLE_STUDENT.resume.url}
+                resumeUrl={student.resume.url}
                 setPendingResumeName={setPendingResumeName}
               />
             </div>
 
             <div className='right-column'>
-              <ContactSection student={SAMPLE_STUDENT} />
+              <ContactSection student={student} />
               <SkillsSection
                 availableSkills={AVAILABLE_SKILLS}
                 nextSkill={nextSkill}
