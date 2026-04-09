@@ -22,11 +22,18 @@ function formatCgpa(minCgpa) {
   return value.toFixed(2);
 }
 
-function formatDeadline(applyBefore) {
-  const date = new Date(applyBefore);
+function formatLongDate(dateValue) {
+  if (!dateValue) {
+    return '';
+  }
+
+  const normalizedDateValue = typeof dateValue === 'string'
+    ? dateValue.replace(' ', 'T')
+    : dateValue;
+  const date = new Date(normalizedDateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return applyBefore;
+    return dateValue;
   }
 
   return new Intl.DateTimeFormat('en-US', {
@@ -40,7 +47,46 @@ function isResponseStatus(status) {
   return status === 'Accepted' || status === 'Rejected' || status === 'Waitlist';
 }
 
+async function handleApply(supabase, jobId) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { status: 'error' };
+  }
+
+  const rno = await supabase
+    .from('profiles')
+    .select('sid')
+    .eq('id', user.id)
+    .single()
+    .then(({ data }) => data?.sid);
+
+  if (!rno) {
+    return { status: 'error' };
+  }
+
+  const response = await supabase.from('Applications').select('*').eq('student_id', rno).eq('internship_id', jobId).single();
+  if (response.data) {
+    console.warn('Already applied for this job');
+    return { status: 'already_applied' };
+  }
+
+  const { data, error } = await supabase.from('Applications').insert({
+    student_id: rno,
+    internship_id: jobId,
+  });
+
+  if (error) {
+    console.error('Error applying for job:', error);
+    return { status: 'error' };
+  } else {
+    console.log('Successfully applied for job:', data);
+    return { status: 'applied' };
+  }
+}
+
 export default function Job({
+  supabase,
+  jobId,
   title,
   company,
   skills = [],
@@ -48,9 +94,12 @@ export default function Job({
   location,
   duration,
   applyBefore,
+  appliedOn,
   minCgpa,
   minEligibility,
   status = 'opportunity',
+  onApplyIntent = null,
+  isAlreadyApplied = false,
 }) {
   const showResponseStatus = isResponseStatus(status);
 
@@ -73,8 +122,26 @@ export default function Job({
         {showResponseStatus ? (
           <span className={`job-status-pill job-status-${status.toLowerCase()}`}>{status}</span>
         ) : status !== 'applied' ? (
-          <button className='job-apply-button' type='button'>
-            apply
+          <button
+            className={`job-apply-button${isAlreadyApplied ? ' job-apply-button-disabled' : ''}`}
+            type='button'
+            disabled={isAlreadyApplied}
+            onClick={() => {
+              const runApplyQuery = () => handleApply(supabase, jobId);
+              if (onApplyIntent) {
+                onApplyIntent({
+                  jobId,
+                  title,
+                  company,
+                  runApplyQuery,
+                });
+                return;
+              }
+
+              runApplyQuery();
+            }}
+          >
+            {isAlreadyApplied ? 'applied' : 'apply'}
           </button>
         ) : null}
       </div>
@@ -94,7 +161,8 @@ export default function Job({
             <span className='job-detail-label'>Duration:</span> {duration}
           </p>
           <p className='job-detail'>
-            <span className='job-detail-label'>Apply Before:</span> {formatDeadline(applyBefore)}
+            <span className='job-detail-label'>{status === 'applied' ? 'Applied On:' : 'Apply Before:'}</span>{' '}
+            {formatLongDate(status === 'applied' ? appliedOn : applyBefore)}
           </p>
         </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Job from './Job';
 import SearchIcon from '../assets/search-icon.png';
 
@@ -26,18 +27,57 @@ function isActiveDeadline(deadline) {
 
 export default function Opportunities({ supabase }) {
     const [jobs, setJobs] = useState([]);
+    const [applyConfirmation, setApplyConfirmation] = useState(null);
+    const [isApplying, setIsApplying] = useState(false);
+    const [appliedInternshipIds, setAppliedInternshipIds] = useState(new Set());
 
     useEffect(() => {
         const fetchJobs = async () => {
-            const { data, error } = await supabase.from('Internships').select('role,stipend,duration,deadline,min_cgpa,min_year,Companies(name,location),Internship_Skills(Skills(name))');
+            const { data, error } = await supabase.from('Internships').select('id,role,stipend,duration,deadline,min_cgpa,min_year,Companies(name,location),Internship_Skills(Skills(name))');
             if (error) {
                 console.error('Error fetching jobs:', error);
             } else {
                 setJobs(data);
             }
         };
+
+        const fetchAppliedInternships = async () => {
+            const { data: authData } = await supabase.auth.getUser();
+            const userId = authData?.user?.id;
+            if (!userId) {
+                setAppliedInternshipIds(new Set());
+                return;
+            }
+
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('sid')
+                .eq('id', userId)
+                .single();
+
+            if (profileError || !profileData?.sid) {
+                console.error('Error fetching profile sid:', profileError);
+                setAppliedInternshipIds(new Set());
+                return;
+            }
+
+            const { data: applicationsData, error: applicationsError } = await supabase
+                .from('Applications')
+                .select('internship_id')
+                .eq('student_id', profileData.sid);
+
+            if (applicationsError) {
+                console.error('Error fetching applications:', applicationsError);
+                setAppliedInternshipIds(new Set());
+                return;
+            }
+
+            setAppliedInternshipIds(new Set((applicationsData ?? []).map((application) => application.internship_id)));
+        };
+
         fetchJobs();
-    }, []);
+        fetchAppliedInternships();
+    }, [supabase]);
 
     jobs.forEach(job => {
         const skillsSet = new Set();
@@ -63,6 +103,63 @@ export default function Opportunities({ supabase }) {
 
         return hasActiveDeadline && matchesText && matchesSalary;
     });
+
+    const confirmApply = async () => {
+        if (!applyConfirmation || applyConfirmation.phase !== 'confirm' || isApplying) {
+            return;
+        }
+
+        setIsApplying(true);
+        try {
+            const result = await applyConfirmation.runApplyQuery();
+            if (result?.status === 'applied') {
+                setAppliedInternshipIds((previousIds) => {
+                    const nextIds = new Set(previousIds);
+                    nextIds.add(applyConfirmation.jobId);
+                    return nextIds;
+                });
+                setApplyConfirmation((previousConfirmation) => {
+                    if (!previousConfirmation) {
+                        return null;
+                    }
+                    return {
+                        ...previousConfirmation,
+                        phase: 'result',
+                        resultType: 'applied',
+                    };
+                });
+            } else if (result?.status === 'already_applied') {
+                setAppliedInternshipIds((previousIds) => {
+                    const nextIds = new Set(previousIds);
+                    nextIds.add(applyConfirmation.jobId);
+                    return nextIds;
+                });
+                setApplyConfirmation((previousConfirmation) => {
+                    if (!previousConfirmation) {
+                        return null;
+                    }
+                    return {
+                        ...previousConfirmation,
+                        phase: 'result',
+                        resultType: 'already_applied',
+                    };
+                });
+            } else {
+                setApplyConfirmation((previousConfirmation) => {
+                    if (!previousConfirmation) {
+                        return null;
+                    }
+                    return {
+                        ...previousConfirmation,
+                        phase: 'result',
+                        resultType: 'error',
+                    };
+                });
+            }
+        } finally {
+            setIsApplying(false);
+        }
+    };
 
     return (
         <section className='opportunities-page'>
@@ -99,6 +196,10 @@ export default function Opportunities({ supabase }) {
                                 applyBefore={job.deadline}
                                 skills={job.skills}
                                 status='opportunity'
+                                supabase={supabase}
+                                jobId={job.id}
+                                onApplyIntent={(payload) => setApplyConfirmation({ ...payload, phase: 'confirm' })}
+                                isAlreadyApplied={appliedInternshipIds.has(job.id)}
                             />
                             {index < filteredJobs.length - 1 ? <hr className='opportunities-divider' /> : null}
                         </div>
@@ -107,6 +208,79 @@ export default function Opportunities({ supabase }) {
                     <div className='opportunities-empty'>No job postings match your current search.</div>
                 )}
             </div>
+
+            {applyConfirmation ? createPortal(
+                <div className='apply-confirm-overlay' role='dialog' aria-modal='true' aria-labelledby='apply-confirm-title'>
+                    <div className='apply-confirm-card'>
+                        {applyConfirmation.phase === 'confirm' ? (
+                            <>
+                                <h3 className='apply-confirm-title' id='apply-confirm-title'>Confirm Application</h3>
+                                <p className='apply-confirm-message'>
+                                    Apply for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong>?
+                                </p>
+                                <div className='apply-confirm-actions'>
+                                    <button
+                                        className='apply-confirm-cancel'
+                                        type='button'
+                                        onClick={() => setApplyConfirmation(null)}
+                                        disabled={isApplying}
+                                    >
+                                        cancel
+                                    </button>
+                                    <button
+                                        className='apply-confirm-submit'
+                                        type='button'
+                                        onClick={confirmApply}
+                                        disabled={isApplying}
+                                    >
+                                        {isApplying ? 'applying...' : 'confirm'}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className='apply-confirm-title' id='apply-confirm-title'>
+                                    {applyConfirmation.resultType === 'applied'
+                                        ? 'Applied Successfully'
+                                        : applyConfirmation.resultType === 'already_applied'
+                                            ? 'Already Applied'
+                                            : 'Unable To Apply'}
+                                </h3>
+                                <p className='apply-confirm-message'>
+                                    {applyConfirmation.resultType === 'applied'
+                                        ? (
+                                            <>
+                                                Your application for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong> has been submitted.
+                                            </>
+                                        )
+                                        : applyConfirmation.resultType === 'already_applied'
+                                            ? (
+                                                <>
+                                                    You have already applied for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong>.
+                                                </>
+                                            )
+                                            : (
+                                                <>
+                                                    We could not process your application right now. Please try again in a while.
+                                                </>
+                                            )}
+                                </p>
+                                <p className='apply-confirm-note'>All the best. You will get a response from the company soon.</p>
+                                <div className='apply-confirm-actions'>
+                                    <button
+                                        className='apply-confirm-submit'
+                                        type='button'
+                                        onClick={() => setApplyConfirmation(null)}
+                                    >
+                                        close
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>,
+                document.body
+            ) : null}
         </section>
     );
 }

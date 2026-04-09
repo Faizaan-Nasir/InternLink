@@ -22,7 +22,7 @@ export default function Student({ supabase }) {
       <Routes>
         <Route path='/' element={<Opportunities supabase={supabase} />} />
         <Route path='/opportunities' element={<Opportunities supabase={supabase} />} />
-        <Route path='/applied' element={<Applied />} />
+        <Route path='/applied' element={<Applied supabase={supabase} />} />
         <Route path='/responses' element={<Responses />} />
         <Route path='/profile' element={<Profile />} />
       </Routes>

@@ -437,6 +437,20 @@ html {
     background-color: #2563eb;
   }
 
+  .job-apply-button-disabled {
+    background-color: #64748b;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: not-allowed;
+  }
+
+  .job-apply-button-disabled:hover {
+    background-color: #64748b;
+  }
+
+  .job-apply-button:disabled:focus-visible {
+    outline: none;
+  }
+
   .job-apply-button:focus-visible {
     outline: 2px solid rgba(191, 219, 254, 0.95);
     outline-offset: 2px;
@@ -580,6 +594,100 @@ html {
   .opportunities-divider-top {
     margin: 0 2.5vw 1rem;
     width: auto;
+  }
+
+  .apply-success-banner {
+    /* margin: 0 2.5vw; */
+    margin-left: 2.5vw;
+    margin-top: 0;
+    margin-bottom: 0;
+    color: #22c55e;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  .apply-confirm-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(3, 7, 18, 0.72);
+    box-sizing: border-box;
+  }
+
+  .apply-confirm-card {
+    width: min(24rem, 92vw);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: var(--backdrop);
+    padding: 1rem;
+    box-sizing: border-box;
+    color: #ffffff;
+    box-shadow: 0 14px 36px rgba(2, 6, 23, 0.5);
+  }
+
+  .apply-confirm-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  .apply-confirm-message {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .apply-confirm-note {
+    margin: 0.6rem 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .apply-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+  }
+
+  .apply-confirm-cancel,
+  .apply-confirm-submit {
+    min-height: 2rem;
+    border-radius: 999px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0 1rem;
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .apply-confirm-cancel {
+    background-color: #dc2626;
+  }
+
+  .apply-confirm-cancel:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+
+  .apply-confirm-submit {
+    background-color: var(--theme-blue);
+  }
+
+  .apply-confirm-submit:hover:not(:disabled) {
+    background-color: #2563eb;
+  }
+
+  .apply-confirm-cancel:disabled,
+  .apply-confirm-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .profile-page {
