@@ -5,6 +5,7 @@ import Logo from './assets/logo.png'
 import Opportunities from './components/Opportunities';
 import Applied from './components/Applied';
 import Responses from './components/Responses';
+import Profile from './components/Profile';
 import Login from './components/Login';
 import ViewError from './components/ViewError';
 import { supabase } from '../utils/supabase';
@@ -73,7 +74,7 @@ function AppShell() {
             <Route path='/Opportunities' element={<Opportunities supabase={supabase} />} />
             <Route path='/applied' element={<Applied />} />
             <Route path='/responses' element={<Responses />} />
-            <Route path='/profile' element={<div />} />
+            <Route path='/profile' element={<Profile />} />
           </Routes>
         </div>
       )}

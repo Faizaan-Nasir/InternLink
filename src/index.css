@@ -557,7 +557,7 @@ html {
     scroll-snap-stop: always;
   }
 
-  .opportunity-row + .opportunity-row {
+  .opportunity-row+.opportunity-row {
     scroll-margin-top: -4px;
   }
 
@@ -580,5 +580,425 @@ html {
   .opportunities-divider-top {
     margin: 0 2.5vw 1rem;
     width: auto;
+  }
+
+  .profile-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 10vh;
+    bottom: 0;
+    padding: 2.8rem 2.5vw 1.2rem;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .profile-wrapper {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 0 1rem;
+    box-sizing: border-box;
+  }
+
+  .profile-header {
+    margin-bottom: 28px;
+    text-align: left;
+  }
+
+  .profile-name {
+    margin: 0 0 6px;
+    color: #ffffff;
+    font-size: clamp(2rem, 2.6vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .profile-subtext {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.96rem;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  .profile-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    min-height: 28.5rem;
+  }
+
+  .left-column,
+  .right-column {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+  }
+
+  .section-card {
+    width: 100%;
+    background-color: #2b3649;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.2);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .section-bottom-card {
+    min-height: 11rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .section-title {
+    margin: 0 0 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.18rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 8px 0;
+  }
+
+  .info-label {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.84rem;
+    font-weight: 600;
+  }
+
+  .info-value {
+    color: #ffffff;
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: right;
+  }
+
+  .resume-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 2.1rem;
+    padding: 0 0.72rem;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #bfdbfe;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0.3rem 0 0.35rem;
+  }
+
+  .resume-bottom-card {
+    padding-bottom: 0.9rem;
+  }
+
+  .resume-helper {
+    margin: 0.2rem 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .resume-file:hover {
+    color: #dbeafe;
+  }
+
+  .primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.05rem;
+    padding: 0 1rem;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--theme-blue);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .primary-btn:hover {
+    background-color: #2563eb;
+  }
+
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 0.1rem 0 0.75rem;
+  }
+
+  .skills-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.8rem;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background-color: rgba(59, 130, 246, 0.24);
+    color: #e5efff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .skills-pill-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    border-radius: 50%;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 0.74rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .skills-pill-remove:hover {
+    background-color: rgba(255, 255, 255, 0.32);
+  }
+
+  .skills-empty {
+    margin: 0 0 0.8rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .skills-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: auto;
+  }
+
+  .skills-select {
+    flex: 1;
+    min-height: 2.05rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0 0.85rem;
+    outline: none;
+  }
+
+  .skills-select:focus-visible {
+    border-color: rgba(191, 219, 254, 0.92);
+  }
+
+  .skills-select option {
+    color: #0f172a;
+  }
+
+  .skills-add-btn {
+    width: auto;
+    min-width: 6.2rem;
+    padding: 0 0.95rem;
+    font-size: 0.76rem;
+  }
+
+  .skills-helper {
+    margin: 0.55rem 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .resume-inline-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.1rem;
+  }
+
+  .resume-picker-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .resume-picker-field {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    height: 2.1rem;
+    padding: 0 0.72rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-sizing: border-box;
+  }
+
+  .resume-hidden-input {
+    display: none;
+  }
+
+  .resume-browse-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.1rem;
+    padding: 0 0.9rem;
+    border-radius: 10px;
+    border: 1px solid rgba(191, 219, 254, 0.42);
+    background-color: rgba(59, 130, 246, 0.24);
+    color: #e5efff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .resume-browse-btn:hover {
+    background-color: rgba(59, 130, 246, 0.34);
+  }
+
+  .resume-picker-text {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .profile-modal-title {
+    margin: 0 0 0.3rem;
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .profile-modal-subtitle {
+    margin: 0 0 0.7rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  .profile-modal-note {
+    margin: 0.4rem 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .profile-modal-input {
+    width: 100%;
+    min-height: 2.4rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.84rem;
+    padding: 0.34rem 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .profile-modal-input::file-selector-button,
+  .profile-modal-input::-webkit-file-upload-button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    margin-right: 0.7rem;
+    background-color: var(--theme-blue);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .profile-modal-input::file-selector-button:hover,
+  .profile-modal-input::-webkit-file-upload-button:hover {
+    background-color: #2563eb;
+  }
+
+  .profile-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 0.7rem;
+  }
+
+  .resume-inline-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+  }
+
+  .profile-modal-cancel,
+  .profile-modal-submit {
+    min-height: 2rem;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0 1rem;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .profile-modal-cancel {
+    border: none;
+    background-color: #dc2626;
+    color: #ffffff;
+  }
+
+  .profile-modal-cancel:hover {
+    background-color: #b91c1c;
+  }
+
+  .profile-modal-submit {
+    border: none;
+    background-color: var(--theme-blue);
+    color: #ffffff;
+  }
+
+  .profile-modal-submit:hover {
+    background-color: #2563eb;
+  }
+
+  @media (min-width: 920px) {
+    .profile-content {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
   }
 }
