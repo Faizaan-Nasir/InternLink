@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Job from './Job';
-import SearchIcon from '../assets/search-icon.png';
+import SearchBar from './SearchBar';
 
 // const appliedJobs = [
 //   {
@@ -96,17 +96,12 @@ export default function Applied({ supabase }) {
       <div className='opportunities-toolbar'>
         <div className='opportunities-summary'>Total Applied Jobs: {filteredJobs.length}</div>
 
-        <label className='opportunities-search' htmlFor='applied-search'>
-          <input
-            id='applied-search'
-            className='opportunities-search-input'
-            type='text'
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder='smart search'
-          />
-          <img className='opportunities-search-image' src={SearchIcon} alt='' aria-hidden='true' />
-        </label>
+        <SearchBar
+          id='applied-search'
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder='smart search'
+        />
       </div>
 
       <hr className='opportunities-divider opportunities-divider-top' />

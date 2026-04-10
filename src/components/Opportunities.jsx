@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Job from './Job';
-import SearchIcon from '../assets/search-icon.png';
+import SearchBar from './SearchBar';
 
 function getStipendValue(stipend) {
     if (typeof stipend === 'number') {
@@ -166,17 +166,12 @@ export default function Opportunities({ supabase }) {
             <div className='opportunities-toolbar'>
                 <div className='opportunities-summary'>Total Job Postings: {filteredJobs.length}</div>
 
-                <label className='opportunities-search' htmlFor='opportunities-search'>
-                    <input
-                        id='opportunities-search'
-                        className='opportunities-search-input'
-                        type='text'
-                        value={searchQuery}
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                        placeholder='smart search'
-                    />
-                    <img className='opportunities-search-image' src={SearchIcon} alt='' aria-hidden='true' />
-                </label>
+                <SearchBar
+                    id='opportunities-search'
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder='smart search'
+                />
             </div>
 
             <hr className='opportunities-divider opportunities-divider-top' />

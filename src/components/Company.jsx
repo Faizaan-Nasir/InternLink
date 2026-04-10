@@ -6,11 +6,11 @@ import Navbar from './Navbar';
 
 export default function Company({ supabase }) {
   const location = useLocation();
-  const isApplicantsRoute = location.pathname.toLowerCase().startsWith('/company/applicants');
+  const isApplicantsRoute = location.pathname.toLowerCase().startsWith('/applicants');
 
   const companyLinks = [
     { to: '/CreateJob', label: 'Create Job' },
-    { to: '/applicants', label: 'Applicants' },
+    { to: '/Applicants', label: 'Applicants' },
   ];
 
   return (

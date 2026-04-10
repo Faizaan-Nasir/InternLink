@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Job from './Job';
-import SearchIcon from '../assets/search-icon.png';
+import SearchBar from './SearchBar';
 
 const sampleResponses = [
   {
@@ -85,17 +85,12 @@ export default function Responses() {
       <div className='opportunities-toolbar'>
         <div className='opportunities-summary'>Total Responses: {filteredJobs.length}</div>
 
-        <label className='opportunities-search' htmlFor='responses-search'>
-          <input
-            id='responses-search'
-            className='opportunities-search-input'
-            type='text'
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder='smart search'
-          />
-          <img className='opportunities-search-image' src={SearchIcon} alt='' aria-hidden='true' />
-        </label>
+        <SearchBar
+          id='responses-search'
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder='smart search'
+        />
       </div>
 
       <hr className='opportunities-divider opportunities-divider-top' />
