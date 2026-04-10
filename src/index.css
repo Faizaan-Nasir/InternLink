@@ -802,6 +802,91 @@ html {
     font-weight: 600;
   }
 
+  .company-post-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    background-color: rgba(3, 7, 18, 0.72);
+  }
+
+  .company-post-card {
+    width: min(24rem, 92vw);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: var(--backdrop);
+    padding: 1rem;
+    box-sizing: border-box;
+    color: #ffffff;
+    box-shadow: 0 14px 36px rgba(2, 6, 23, 0.48);
+  }
+
+  .company-post-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.06rem;
+    line-height: 1.2;
+  }
+
+  .company-post-message {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .company-post-note {
+    margin: 0.55rem 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .company-post-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+  }
+
+  .company-post-cancel,
+  .company-post-confirm {
+    min-height: 2rem;
+    border-radius: 999px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0 1rem;
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .company-post-cancel {
+    background-color: #dc2626;
+  }
+
+  .company-post-cancel:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+
+  .company-post-confirm {
+    background-color: var(--theme-blue);
+  }
+
+  .company-post-confirm:hover:not(:disabled) {
+    background-color: #2563eb;
+  }
+
+  .company-post-cancel:disabled,
+  .company-post-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   @media (max-width: 900px) {
     .company-form-grid {
       grid-template-columns: minmax(0, 1fr);

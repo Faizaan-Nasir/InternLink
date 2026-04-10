@@ -1,41 +1,87 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
+
+const INITIAL_FORM = {
+  role: '',
+  stipend: '',
+  duration: '',
+  apply_before: '',
+  max_applications: '',
+  min_cgpa: '',
+  min_year: '',
+  skills_required: '',
+};
+
 export default function CreateInternship({ supabase }) {
-  const [userID, setUserID] = useState(null);
-  const [companyID, setCompanyID] = useState(null);
-  function handleCreateJob() {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUserID(session.user.id);
-        console.log('User ID:', session.user.id);
-        supabase.from('profiles').select('cid').eq('id', session.user.id).single().then(({ data }) => {
-          setCompanyID(data.cid);
-          console.log('Company ID:', data.cid);
-          const studentData = {
-            company_id: companyID,
-            role: document.getElementById('internship-role').value,
-            stipend: parseFloat(document.getElementById('internship-stipend').value),
-            duration: parseInt(document.getElementById('internship-duration').value, 10),
-            deadline: document.getElementById('internship-apply-before').value,
-            max_applicants: parseInt(document.getElementById('internship-max-applications').value, 10),
-            min_cgpa: parseFloat(document.getElementById('internship-min-cgpa').value),
-            min_year: parseInt(document.getElementById('internship-min-year').value, 10)
-            // skills_required: document.getElementById('internship-skills').value.split(',').map(skill => skill.trim())
-          }
-          supabase.from('Internships').insert(studentData).then(({ data, error }) => {
-            if (error) {
-              console.error('Error creating internship:', error);
-            } else {
-              console.log('Internship created successfully:', data);
-            }
-          });
-        });
-      } else {
-        console.error('No user session found');
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalState, setModalState] = useState(null);
+
+  const openConfirmationModal = () => {
+    setModalState({ phase: 'confirm' });
+  };
+
+  const closeModal = () => {
+    if (isSubmitting) {
+      return;
+    }
+    setModalState(null);
+  };
+
+  const resetForm = () => {
+    setForm(INITIAL_FORM);
+  };
+
+  const createInternship = async () => {
+    setIsSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        throw new Error('No user session found');
       }
-    }).catch((error) => {
-      console.error('Error fetching user session:', error);
-    });
-  }
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('cid')
+        .eq('id', userId)
+        .single();
+
+      if (profileError || !profileData?.cid) {
+        throw profileError || new Error('Company ID not found for current user');
+      }
+
+      const internshipData = {
+        company_id: profileData.cid,
+        role: form.role,
+        stipend: Number(form.stipend),
+        duration: Number(form.duration),
+        deadline: form.apply_before,
+        max_applicants: Number(form.max_applications),
+        min_cgpa: Number(form.min_cgpa),
+        min_year: Number(form.min_year),
+      };
+
+      const { error: insertError } = await supabase.from('Internships').insert(internshipData);
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      setModalState({ phase: 'success' });
+      resetForm();
+    } catch (error) {
+      console.error('Error creating internship:', error);
+      setModalState({
+        phase: 'error',
+        message: 'We could not create the job right now. Please try again in a while.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section className='company-create-page'>
       <div className='company-create-scroll'>
@@ -45,17 +91,38 @@ export default function CreateInternship({ supabase }) {
             <div className='company-form-grid'>
               <div className='company-form-group company-form-group-full'>
                 <label htmlFor='internship-role'>Role</label>
-                <input id='internship-role' name='role' placeholder='AI/ML Developer Intern' type='text' />
+                <input
+                  id='internship-role'
+                  name='role'
+                  placeholder='AI/ML Developer Intern'
+                  type='text'
+                  value={form.role}
+                  onChange={(event) => setForm((previous) => ({ ...previous, role: event.target.value }))}
+                />
               </div>
 
               <div className='company-form-group'>
                 <label htmlFor='internship-stipend'>Stipend</label>
-                <input id='internship-stipend' name='stipend' placeholder='26000' type='number' />
+                <input
+                  id='internship-stipend'
+                  name='stipend'
+                  placeholder='26000'
+                  type='number'
+                  value={form.stipend}
+                  onChange={(event) => setForm((previous) => ({ ...previous, stipend: event.target.value }))}
+                />
               </div>
 
               <div className='company-form-group'>
                 <label htmlFor='internship-duration'>Duration (months)</label>
-                <input id='internship-duration' name='duration' placeholder='6' type='number' />
+                <input
+                  id='internship-duration'
+                  name='duration'
+                  placeholder='6'
+                  type='number'
+                  value={form.duration}
+                  onChange={(event) => setForm((previous) => ({ ...previous, duration: event.target.value }))}
+                />
               </div>
             </div>
           </div>
@@ -65,12 +132,25 @@ export default function CreateInternship({ supabase }) {
             <div className='company-form-grid'>
               <div className='company-form-group'>
                 <label htmlFor='internship-apply-before'>Apply Before</label>
-                <input id='internship-apply-before' name='apply_before' type='date' />
+                <input
+                  id='internship-apply-before'
+                  name='apply_before'
+                  type='date'
+                  value={form.apply_before}
+                  onChange={(event) => setForm((previous) => ({ ...previous, apply_before: event.target.value }))}
+                />
               </div>
 
               <div className='company-form-group'>
                 <label htmlFor='internship-max-applications'>Max Applications</label>
-                <input id='internship-max-applications' name='max_applications' placeholder='500' type='number' />
+                <input
+                  id='internship-max-applications'
+                  name='max_applications'
+                  placeholder='500'
+                  type='number'
+                  value={form.max_applications}
+                  onChange={(event) => setForm((previous) => ({ ...previous, max_applications: event.target.value }))}
+                />
               </div>
             </div>
           </div>
@@ -80,12 +160,27 @@ export default function CreateInternship({ supabase }) {
             <div className='company-form-grid'>
               <div className='company-form-group'>
                 <label htmlFor='internship-min-cgpa'>Minimum CGPA</label>
-                <input id='internship-min-cgpa' name='min_cgpa' placeholder='8.00' step='0.01' type='number' />
+                <input
+                  id='internship-min-cgpa'
+                  name='min_cgpa'
+                  placeholder='8.00'
+                  step='0.01'
+                  type='number'
+                  value={form.min_cgpa}
+                  onChange={(event) => setForm((previous) => ({ ...previous, min_cgpa: event.target.value }))}
+                />
               </div>
 
               <div className='company-form-group'>
                 <label htmlFor='internship-min-year'>Minimum Year</label>
-                <input id='internship-min-year' name='min_year' placeholder='3' type='number' />
+                <input
+                  id='internship-min-year'
+                  name='min_year'
+                  placeholder='3'
+                  type='number'
+                  value={form.min_year}
+                  onChange={(event) => setForm((previous) => ({ ...previous, min_year: event.target.value }))}
+                />
               </div>
 
               <div className='company-form-group company-form-group-full'>
@@ -95,17 +190,62 @@ export default function CreateInternship({ supabase }) {
                   name='skills_required'
                   placeholder='Python, Cloud Computing, Machine Learning'
                   rows={3}
+                  value={form.skills_required}
+                  onChange={(event) => setForm((previous) => ({ ...previous, skills_required: event.target.value }))}
                 />
               </div>
             </div>
           </div>
 
           <div className='company-form-actions'>
-            <button className='company-btn-secondary' type='button'>Cancel</button>
-            <button className='company-btn-primary' type='button' onClick={() => handleCreateJob()}>Create Job</button>
+            <button className='company-btn-secondary' type='button' onClick={resetForm}>Cancel</button>
+            <button className='company-btn-primary' type='button' onClick={openConfirmationModal}>
+              Create Job
+            </button>
           </div>
         </form>
       </div>
+
+      {modalState ? createPortal(
+        <div className='company-post-overlay' role='dialog' aria-modal='true' aria-labelledby='company-post-title'>
+          <div className='company-post-card'>
+            {modalState.phase === 'confirm' ? (
+              <>
+                <h3 className='company-post-title' id='company-post-title'>Confirm Job Post</h3>
+                <p className='company-post-message'>
+                  Publish this internship opportunity now?
+                </p>
+                <div className='company-post-actions'>
+                  <button className='company-post-cancel' type='button' onClick={closeModal} disabled={isSubmitting}>
+                    cancel
+                  </button>
+                  <button className='company-post-confirm' type='button' onClick={createInternship} disabled={isSubmitting}>
+                    {isSubmitting ? 'posting...' : 'confirm'}
+                  </button>
+                </div>
+              </>
+            ) : modalState.phase === 'success' ? (
+              <>
+                <h3 className='company-post-title' id='company-post-title'>Job Posted Successfully</h3>
+                <p className='company-post-message'>Your internship opportunity has been created.</p>
+                <p className='company-post-note'>The opportunity will now be visible to all students connected to the portal.</p>
+                <div className='company-post-actions'>
+                  <button className='company-post-confirm' type='button' onClick={closeModal}>close</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className='company-post-title' id='company-post-title'>Unable To Create Job</h3>
+                <p className='company-post-message'>{modalState.message}</p>
+                <div className='company-post-actions'>
+                  <button className='company-post-confirm' type='button' onClick={closeModal}>close</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>,
+        document.body
+      ) : null}
     </section>
   );
 }
