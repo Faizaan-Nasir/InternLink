@@ -9,8 +9,8 @@ export default function Company({ supabase }) {
   const isApplicantsRoute = location.pathname.toLowerCase().startsWith('/company/applicants');
 
   const companyLinks = [
-    { to: '/company/create-job', label: 'Create Job' },
-    { to: '/company/applicants', label: 'Applicants' },
+    { to: '/CreateJob', label: 'Create Job' },
+    { to: '/applicants', label: 'Applicants' },
   ];
 
   return (

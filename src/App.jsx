@@ -92,8 +92,8 @@ function AppShell() {
 
       setCategory(data.category);
 
-      if (data.category !== 'Student') {
-        console.error('Unauthorized access: User is not a student');
+      if (data.category !== 'Student' && data.category !== 'Company') {
+        console.error('Unauthorized access: User is not a student or company');
         await supabase.auth.signOut();
         return;
       }
@@ -109,22 +109,25 @@ function AppShell() {
   }, [authReady, user?.id]);
 
   useEffect(() => {
-    if (!authReady || !roleReady || !user || category !== 'Student') {
+    if (!authReady || !roleReady || !user || (category !== 'Student' && category !== 'Company')) {
       return;
     }
 
-    if (location.pathname.toLowerCase() === '/login') {
+    if (location.pathname.toLowerCase() === '/login' && category === 'Student') {
       navigate('/Opportunities', { replace: true });
+    }
+    if (location.pathname.toLowerCase() === '/login' && category === 'Company') {
+      navigate('/CreateJob', { replace: true });
     }
   }, [authReady, roleReady, user, category, location.pathname, navigate]);
 
   const shouldShowStudent = authReady && !!user && roleReady && category === 'Student';
-  const isCompanyRoute = location.pathname.toLowerCase().startsWith('/company');
+  const shouldShowCompany = authReady && !!user && roleReady && category === 'Company';
 
   return (
     <div className="App">
       <ViewError />
-      {isCompanyRoute ? (
+      {shouldShowCompany ? (
         <Company supabase={supabase} />
       ) : shouldShowStudent ? (
         <Student supabase={supabase} />
