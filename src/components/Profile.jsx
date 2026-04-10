@@ -86,36 +86,38 @@ export default function Profile({ supabase }) {
   return (
     <>
       <section className='profile-page'>
-        <div className='profile-wrapper'>
-          <div className='profile-header'>
-            <h1 className='profile-name'>{student.name}</h1>
-            <p className='profile-subtext'>
-              {student.branch} • {student.university}
-            </p>
-          </div>
-
-          <div className='profile-content'>
-            <div className='left-column'>
-              <AcademicDetailsSection student={student} />
-              <ResumeSection
-                onUploadResume={uploadPendingResume}
-                pendingResumeName={pendingResumeName}
-                resumeName={resumeName}
-                resumeUrl={student.resume.url}
-                setPendingResumeName={setPendingResumeName}
-              />
+        <div className='profile-scroll'>
+          <div className='profile-wrapper'>
+            <div className='profile-header'>
+              <h1 className='profile-name'>{student.name}</h1>
+              <p className='profile-subtext'>
+                {student.branch} • {student.university}
+              </p>
             </div>
 
-            <div className='right-column'>
-              <ContactSection student={student} />
-              <SkillsSection
-                availableSkills={AVAILABLE_SKILLS}
-                nextSkill={nextSkill}
-                onAddSkill={addSkill}
-                onRemoveSkill={removeSkill}
-                setNextSkill={setNextSkill}
-                studentSkills={studentSkills}
-              />
+            <div className='profile-content'>
+              <div className='left-column'>
+                <AcademicDetailsSection student={student} />
+                <ResumeSection
+                  onUploadResume={uploadPendingResume}
+                  pendingResumeName={pendingResumeName}
+                  resumeName={resumeName}
+                  resumeUrl={student.resume.url}
+                  setPendingResumeName={setPendingResumeName}
+                />
+              </div>
+
+              <div className='right-column'>
+                <ContactSection student={student} />
+                <SkillsSection
+                  availableSkills={AVAILABLE_SKILLS}
+                  nextSkill={nextSkill}
+                  onAddSkill={addSkill}
+                  onRemoveSkill={removeSkill}
+                  setNextSkill={setNextSkill}
+                  studentSkills={studentSkills}
+                />
+              </div>
             </div>
           </div>
         </div>
