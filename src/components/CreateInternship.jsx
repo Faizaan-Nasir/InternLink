@@ -1,4 +1,41 @@
-export default function CreateInternship() {
+import { useState } from 'react';
+export default function CreateInternship({ supabase }) {
+  const [userID, setUserID] = useState(null);
+  const [companyID, setCompanyID] = useState(null);
+  function handleCreateJob() {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserID(session.user.id);
+        console.log('User ID:', session.user.id);
+        supabase.from('profiles').select('cid').eq('id', session.user.id).single().then(({ data }) => {
+          setCompanyID(data.cid);
+          console.log('Company ID:', data.cid);
+          const studentData = {
+            company_id: companyID,
+            role: document.getElementById('internship-role').value,
+            stipend: parseFloat(document.getElementById('internship-stipend').value),
+            duration: parseInt(document.getElementById('internship-duration').value, 10),
+            deadline: document.getElementById('internship-apply-before').value,
+            max_applicants: parseInt(document.getElementById('internship-max-applications').value, 10),
+            min_cgpa: parseFloat(document.getElementById('internship-min-cgpa').value),
+            min_year: parseInt(document.getElementById('internship-min-year').value, 10)
+            // skills_required: document.getElementById('internship-skills').value.split(',').map(skill => skill.trim())
+          }
+          supabase.from('Internships').insert(studentData).then(({ data, error }) => {
+            if (error) {
+              console.error('Error creating internship:', error);
+            } else {
+              console.log('Internship created successfully:', data);
+            }
+          });
+        });
+      } else {
+        console.error('No user session found');
+      }
+    }).catch((error) => {
+      console.error('Error fetching user session:', error);
+    });
+  }
   return (
     <section className='company-create-page'>
       <div className='company-create-scroll'>
@@ -65,7 +102,7 @@ export default function CreateInternship() {
 
           <div className='company-form-actions'>
             <button className='company-btn-secondary' type='button'>Cancel</button>
-            <button className='company-btn-primary' type='button'>Create Job</button>
+            <button className='company-btn-primary' type='button' onClick={() => handleCreateJob()}>Create Job</button>
           </div>
         </form>
       </div>

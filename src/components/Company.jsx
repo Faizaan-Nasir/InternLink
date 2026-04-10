@@ -31,7 +31,7 @@ export default function Company({ supabase }) {
         onClick={() => supabase.auth.signOut()}
       />
 
-      {isApplicantsRoute ? <CompanyApplicants /> : <CreateInternship />}
+      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} /> : <CreateInternship supabase={supabase} />}
     </div>
   );
 }
