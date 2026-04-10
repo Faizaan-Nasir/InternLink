@@ -7,9 +7,16 @@ import Profile from './Profile';
 import Responses from './Responses';
 
 export default function Student({ supabase }) {
+  const studentLinks = [
+    { to: '/Opportunities', label: 'Opportunities' },
+    { to: '/Applied', label: 'Applied' },
+    { to: '/Responses', label: 'Responses' },
+    { to: '/Profile', label: 'Profile' },
+  ];
+
   return (
     <div className='main-content'>
-      <Navbar />
+      <Navbar links={studentLinks} />
       <div className='title'>Student Dashboard</div>
       <div className='title-underline' aria-hidden='true' />
       <img

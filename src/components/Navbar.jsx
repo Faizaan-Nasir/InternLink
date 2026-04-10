@@ -1,12 +1,29 @@
 import { NavLink } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Navbar({
+  links = [
+    { to: '/Opportunities', label: 'Opportunities' },
+    { to: '/Applied', label: 'Applied' },
+    { to: '/Responses', label: 'Responses' },
+    { to: '/Profile', label: 'Profile' },
+  ],
+  className = 'navbar',
+  linkClassName = 'nav-link',
+  activeClassName = 'nav-link-active',
+  dividerColor = 'white',
+}) {
   return (
-    <div className='navbar'>
-      <NavLink to='/Opportunities' className={({ isActive }) => isActive ? 'nav-link-active' : 'nav-link'} style={{ borderRight: '1px solid white' }}>Opportunities</NavLink>
-      <NavLink to='/Applied' className={({ isActive }) => isActive ? 'nav-link-active' : 'nav-link'} style={{ borderRight: '1px solid white' }}>Applied</NavLink>
-      <NavLink to='/Responses' className={({ isActive }) => isActive ? 'nav-link-active' : 'nav-link'} style={{ borderRight: '1px solid white' }}>Responses</NavLink>
-      <NavLink to='/Profile' className={({ isActive }) => isActive ? 'nav-link-active' : 'nav-link'}>Profile</NavLink>
+    <div className={className}>
+      {links.map((link, index) => (
+        <NavLink
+          key={link.to}
+          to={link.to}
+          className={({ isActive }) => (isActive ? activeClassName : linkClassName)}
+          style={index < links.length - 1 ? { borderRight: `1px solid ${dividerColor}` } : undefined}
+        >
+          {link.label}
+        </NavLink>
+      ))}
     </div>
   );
 }

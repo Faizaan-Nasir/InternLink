@@ -163,6 +163,38 @@ html {
     border-radius: 0 20px 0 0;
   }
 
+  .company-navbar {
+    display: flex;
+    position: absolute;
+    right: 0;
+    border-radius: 0 20px 0 20px;
+    font-size: 2.8vh;
+    background-color: var(--theme-grey);
+  }
+
+  .company-nav-link,
+  .company-nav-link-active {
+    color: white;
+    text-decoration: none;
+    width: 11.25vw;
+    min-width: 9.6rem;
+    line-height: 10vh;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .company-nav-link-active {
+    background-color: var(--theme-blue);
+  }
+
+  .company-navbar .company-nav-link-active:first-child {
+    border-radius: 0 0 0 20px;
+  }
+
+  .company-navbar .company-nav-link-active:last-child {
+    border-radius: 0 20px 0 0;
+  }
+
   .logo {
     width: 15vw;
     position: absolute;
@@ -580,6 +612,204 @@ html {
     font-size: 1.05rem;
     line-height: 1.5;
     padding-top: 1rem;
+  }
+
+  .company-create-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 18vh;
+    bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .company-create-scroll {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0.8rem;
+    padding: 0 2.5vw 1.5rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  }
+
+  .company-create-page::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3.5rem;
+    background: linear-gradient(180deg, rgba(31, 41, 55, 0) 0%, rgba(31, 41, 55, 0.9) 68%, rgba(31, 41, 55, 1) 100%);
+    pointer-events: none;
+    border-radius: 0 0 20px 20px;
+    z-index: 5;
+  }
+
+  .company-create-form {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding-bottom: 3.85rem;
+    box-sizing: border-box;
+  }
+
+  .company-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.95rem 1rem 1rem;
+    border-radius: 12px;
+    background-color: #2b3649;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+
+  .company-form-section-title {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+    text-underline-offset: 0.24rem;
+    text-decoration-thickness: 0.08rem;
+    text-decoration-color: rgba(255, 255, 255, 0.76);
+  }
+
+  .company-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+  }
+
+  .company-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .company-form-group-full {
+    grid-column: 1 / -1;
+  }
+
+  .company-form-group label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.87);
+  }
+
+  .company-form-group input,
+  .company-form-group textarea {
+    width: 100%;
+    min-height: 2.45rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0 0.78rem;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .company-form-group textarea {
+    min-height: 5.8rem;
+    padding: 0.62rem 0.78rem;
+    resize: vertical;
+  }
+
+  .company-form-group input:focus,
+  .company-form-group textarea:focus {
+    border-color: rgba(191, 219, 254, 0.8);
+  }
+
+  .company-form-group input::placeholder,
+  .company-form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.54);
+  }
+
+  .company-form-group input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .company-form-group input[type='number']::-webkit-outer-spin-button,
+  .company-form-group input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .company-form-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .company-btn-secondary,
+  .company-btn-primary {
+    min-height: 2.35rem;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0 1.25rem;
+    cursor: pointer;
+  }
+
+  .company-btn-secondary {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+
+  .company-btn-primary {
+    border: none;
+    background-color: var(--theme-blue);
+    color: #ffffff;
+  }
+
+  .company-applicants-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 18vh;
+    bottom: 0;
+    padding: 0 2.5vw 2.3rem;
+    box-sizing: border-box;
+  }
+
+  .company-applicants-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background-color: #2b3649;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .company-form-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .company-form-group-full {
+      grid-column: auto;
+    }
   }
 
   .opportunities-divider {

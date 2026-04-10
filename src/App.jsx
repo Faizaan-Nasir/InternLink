@@ -1,5 +1,6 @@
 import './App.css'
 import { Routes, Route } from 'react-router-dom';
+import Company from './components/Company';
 import Login from './components/Login';
 import Student from './components/Student';
 import ViewError from './components/ViewError';
@@ -118,11 +119,14 @@ function AppShell() {
   }, [authReady, roleReady, user, category, location.pathname, navigate]);
 
   const shouldShowStudent = authReady && !!user && roleReady && category === 'Student';
+  const isCompanyRoute = location.pathname.toLowerCase().startsWith('/company');
 
   return (
     <div className="App">
       <ViewError />
-      {shouldShowStudent ? (
+      {isCompanyRoute ? (
+        <Company supabase={supabase} />
+      ) : shouldShowStudent ? (
         <Student supabase={supabase} />
       ) : (
         <div className='main-content login-shell'>
