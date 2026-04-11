@@ -9,6 +9,7 @@ const MOCK_JOBS = [
       {
         id: 'a1',
         name: 'Aarav Sharma',
+        university: 'IIT Madras',
         branch: 'Computer Science and Engineering',
         year: '3',
         cgpa: '8.64',
@@ -20,6 +21,7 @@ const MOCK_JOBS = [
       {
         id: 'a2',
         name: 'Riya Menon',
+        university: 'NIT Trichy',
         branch: 'Information Technology',
         year: '3',
         cgpa: '8.31',
@@ -37,6 +39,7 @@ const MOCK_JOBS = [
       {
         id: 'a3',
         name: 'Dev Arora',
+        university: 'IIIT Delhi',
         branch: 'Computer Science and Engineering',
         year: '4',
         cgpa: '8.72',
@@ -48,6 +51,7 @@ const MOCK_JOBS = [
       {
         id: 'a4',
         name: 'Sneha Iyer',
+        university: 'VIT Vellore',
         branch: 'Electronics and Communication Engineering',
         year: '4',
         cgpa: '8.48',
@@ -59,6 +63,7 @@ const MOCK_JOBS = [
       {
         id: 'a5',
         name: 'Karan Patel',
+        university: 'DAIICT',
         branch: 'Information Technology',
         year: '3',
         cgpa: '8.12',
@@ -76,6 +81,7 @@ const MOCK_JOBS = [
       {
         id: 'a6',
         name: 'Neha Gupta',
+        university: 'IIT Kanpur',
         branch: 'Mathematics and Computing',
         year: '3',
         cgpa: '8.91',
@@ -88,20 +94,60 @@ const MOCK_JOBS = [
   },
 ];
 
-export default function CompanyApplicants() {
+export default function CompanyApplicants({ supabase }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState(null);
-
-  const jobs = useMemo(
-    () =>
-      MOCK_JOBS.map((job) => ({
-        ...job,
-        applicantCount: job.applicants.length,
-      })),
-    []
-  );
-
+  const [jobs, setJobs] = useState([]);
+  async function getCompanyJobs() {
+    const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(name)');
+    if (error) {
+      console.error('Error fetching company jobs:', error);
+    } else {
+      console.log('Fetched company jobs:', data);
+      for (const job of data) {
+        console.log(`Job: ${job.role}, Applicants: ${job.Applications.length}`);
+        for (const app of job.Applications) {
+          console.log(`  Applicant ID: ${app.student_id}, Applied Time: ${app.applied_time}`);
+          const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
+          if (studentError) {
+            console.error(`Error fetching student data for applicant ${app.student_id}:`, studentError);
+          } else {
+            console.log(`    Student Name: ${studentData.name}, Branch: ${studentData.branch}, Year: ${studentData.year}, CGPA: ${studentData.cgpa}, University: ${studentData.university}, Skills: ${studentData.Student_Skills.map((skill) => skill.Skills.name).join(', ')}`);
+            app.name = studentData.name;
+            app.branch = studentData.branch;
+            app.year = studentData.year;
+            app.cgpa = studentData.cgpa;
+            app.phone = studentData.ph;
+            app.university = studentData.university;
+            app.email = studentData.email;
+            app.skills = studentData.Student_Skills.map((skill) => skill.Skills.name);
+          }
+        }
+      }
+    }
+    const temporaryJobs = data.map((job) => ({
+      id: job.id,
+      title: job.role,
+      applicantCount: job.Applications.length,
+      applicants: job.Applications.map((app) => ({
+        id: app.student_id,
+        appliedAgo: `${Math.floor((Date.now() - new Date(app.applied_time).getTime()) / (1000 * 60 * 60))}h ago`,
+        name: app.name,
+        skills: app.skills,
+        cgpa: app.cgpa,
+        branch: app.branch,
+        year: app.year,
+        phone: app.phone,
+        email: app.email,
+        university: app.university
+      }))
+    }))
+    setJobs(temporaryJobs);
+  }
+  useEffect(() => {
+    getCompanyJobs();
+  }, [supabase]);
   const filteredJobs = useMemo(() => {
     const normalizedQuery = searchTerm.trim().toLowerCase();
     if (!normalizedQuery) {
@@ -187,27 +233,33 @@ export default function CompanyApplicants() {
             <div className='panel-empty'>Select an applicant to view details</div>
           ) : (
             <div className='details-content'>
-              <h3 className='details-name'>{selectedApplicant.name}</h3>
-              <p className='details-subtext'>{selectedApplicant.branch} • Year {selectedApplicant.year}</p>
+              <div className='details-scroll'>
+                <h3 className='details-name'>{selectedApplicant.name}</h3>
+                <p className='details-subtext'>{selectedApplicant.branch} • Year {selectedApplicant.year}</p>
 
-              <div className='details-row'>
-                <span className='details-label'>CGPA</span>
-                <span className='details-value'>{selectedApplicant.cgpa}</span>
-              </div>
-              <div className='details-row'>
-                <span className='details-label'>Skills</span>
-                <span className='details-value'>{selectedApplicant.skills.join(', ')}</span>
-              </div>
-              <div className='details-row'>
-                <span className='details-label'>Phone</span>
-                <span className='details-value'>{selectedApplicant.phone}</span>
-              </div>
-              <div className='details-row'>
-                <span className='details-label'>Email</span>
-                <span className='details-value'>{selectedApplicant.email}</span>
+                <div className='details-row'>
+                  <span className='details-label'>University</span>
+                  <span className='details-value'>{selectedApplicant.university}</span>
+                </div>
+                <div className='details-row'>
+                  <span className='details-label'>CGPA</span>
+                  <span className='details-value'>{selectedApplicant.cgpa}</span>
+                </div>
+                <div className='details-row'>
+                  <span className='details-label'>Skills</span>
+                  <span className='details-value'>{selectedApplicant.skills.join(', ')}</span>
+                </div>
+                <div className='details-row'>
+                  <span className='details-label'>Phone</span>
+                  <span className='details-value'>{selectedApplicant.phone}</span>
+                </div>
+                <div className='details-row'>
+                  <span className='details-label'>Email</span>
+                  <span className='details-value'>{selectedApplicant.email}</span>
+                </div>
               </div>
 
-              <div className='details-actions'>
+              <div className='details-actions details-actions-sticky'>
                 <button type='button' className='details-btn-secondary'>View Resume</button>
                 <div className='details-actions-inline'>
                   <button type='button' className='details-btn-accept'>Accept</button>
