@@ -1,0 +1,152 @@
+.university-overview-page {
+  overflow: hidden;
+}
+
+.university-overview-page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3.5rem;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0) 0%, rgba(31, 41, 55, 0.9) 68%, rgba(31, 41, 55, 1) 100%);
+  pointer-events: none;
+  border-radius: 0 0 20px 20px;
+  z-index: 5;
+}
+
+.university-overview-scroll {
+  /* Overview has no toolbar above the list; let it use full height. */
+  height: 95%;
+  scroll-snap-type: none;
+}
+.university-static-page-inner {
+  padding: 0 0 3.75rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.university-page-description-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.1rem;
+}
+
+.university-page-description {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 54rem;
+}
+
+.university-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.university-topbar-students {
+  align-items: center;
+}
+
+.university-action-btn {
+  width: auto;
+  min-width: 8.4rem;
+  padding: 0 1.15rem;
+}
+
+.university-secondary-btn {
+  min-height: 2.05rem;
+  font-size: 0.82rem;
+  padding: 0 1rem;
+  white-space: nowrap;
+}
+
+.university-hero-banner {
+  position: relative;
+  min-height: 18rem;
+  border-radius: 16px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 0.2rem;
+}
+
+.university-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(10, 16, 28, 0.62);
+  z-index: 1;
+}
+
+.university-hero-banner-content {
+  position: relative;
+  z-index: 2;
+  width: min(48rem, 70%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 2rem 2rem 2.2rem;
+}
+
+.university-hero-kicker {
+  margin: 0 0 0.6rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.university-hero-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2rem, 2.8vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.university-hero-description {
+  margin: 0.9rem 0 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 38rem;
+}
+
+.university-stat-grid-tight {
+  margin-bottom: 0;
+}
+
+.university-topbar-clean {
+  align-items: flex-end;
+}
+
+/* overview and analytics stat cards */
+.university-stat-card:nth-child(1) {
+  background: var(--uni-grad-2);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-stat-card:nth-child(2) {
+  background: var(--uni-grad-3);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-stat-card:nth-child(3) {
+  background: var(--uni-grad-4);
+  border: 1px solid var(--uni-border-2);
+}
+
+.university-stat-card:nth-child(4) {
+  background: var(--uni-grad-5);
+  border: 1px solid var(--uni-border-3);
+}

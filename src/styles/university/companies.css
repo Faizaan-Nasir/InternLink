@@ -1,0 +1,126 @@
+.university-company-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.university-toolbar-extended {
+  align-items: flex-end;
+}
+
+.university-toolbar-right {
+  justify-content: flex-end;
+}
+
+.university-toolbar-split {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.university-toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.university-shared-search {
+  width: min(14.75rem, 20vw);
+  min-width: 14rem;
+}
+
+.university-compact-search {
+  width: min(18rem, 25vw);
+  min-width: 16rem;
+}
+
+.university-company-filter {
+  min-height: 2.5rem;
+}
+
+.university-company-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+.university-company-count {
+  flex-shrink: 0;
+  min-width: 6.8rem;
+  border-radius: 12px;
+  background-color: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 0.65rem 0.7rem;
+  text-align: center;
+}
+
+.university-company-count span {
+  display: block;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.university-company-count small {
+  display: block;
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.university-section-title-tight {
+  margin-bottom: 0.15rem;
+}
+
+.university-companies-page {
+  overflow: hidden;
+}
+
+.university-companies-page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3.5rem;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0) 0%, rgba(31, 41, 55, 0.9) 68%, rgba(31, 41, 55, 1) 100%);
+  pointer-events: none;
+  border-radius: 0 0 20px 20px;
+  z-index: 5;
+}
+
+.university-companies-scroll {
+  height: calc(95% - 3.9rem);
+  scroll-snap-type: none;
+}
+.opportunities-list.university-companies-scroll {
+  height: calc(95% - 3.9rem) !important;
+}
+/* company cards */
+.university-company-grid .university-section-card:nth-child(4n + 1) {
+  background: var(--uni-grad-2);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-company-grid .university-section-card:nth-child(4n + 2) {
+  background: var(--uni-grad-3);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-company-grid .university-section-card:nth-child(4n + 3) {
+  background: var(--uni-grad-4);
+  border: 1px solid var(--uni-border-2);
+}
+
+.university-company-grid .university-section-card:nth-child(4n + 4) {
+  background: var(--uni-grad-5);
+  border: 1px solid var(--uni-border-3);
+}
+/* company count tile stays same family */
+.university-company-count {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

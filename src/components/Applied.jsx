@@ -2,45 +2,6 @@ import { useState, useEffect } from 'react';
 import Job from './Job';
 import SearchBar from './SearchBar';
 
-// const appliedJobs = [
-//   {
-//     title: 'Product Design Intern',
-//     company: 'Figma Inc.',
-//     skills: ['Design Systems', 'Figma', 'Prototyping'],
-//     stipend: 28000,
-//     location: 'Remote',
-//     duration: '6 months',
-//     applyBefore: '2026-05-20',
-//     minCgpa: 8.1,
-//     minEligibility: 'Year 3',
-//     status: 'applied',
-//   },
-//   {
-//     title: 'Backend Engineer Intern',
-//     company: 'Atlassian Inc.',
-//     skills: ['Node.js', 'PostgreSQL', 'REST APIs'],
-//     stipend: 32000,
-//     location: 'Bengaluru',
-//     duration: '5 months',
-//     applyBefore: '2026-05-28',
-//     minCgpa: 8.3,
-//     minEligibility: 'Year 3',
-//     status: 'applied',
-//   },
-//   {
-//     title: 'Data Science Intern',
-//     company: 'NVIDIA Inc.',
-//     skills: ['Python', 'Pandas', 'Machine Learning'],
-//     stipend: 35000,
-//     location: 'Hyderabad',
-//     duration: '6 months',
-//     applyBefore: '2026-06-03',
-//     minCgpa: 8.5,
-//     minEligibility: 'Year 4',
-//     status: 'applied',
-//   },
-// ];
-
 function getStipendValue(stipend) {
   if (typeof stipend === 'number') {
     return stipend;
@@ -92,7 +53,7 @@ export default function Applied({ supabase }) {
   });
 
   return (
-    <section className='opportunities-page'>
+    <section className='opportunities-page applied-page'>
       <div className='opportunities-toolbar'>
         <div className='opportunities-summary'>Total Applied Jobs: {filteredJobs.length}</div>
 

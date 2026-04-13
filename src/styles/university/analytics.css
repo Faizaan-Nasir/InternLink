@@ -1,0 +1,100 @@
+.university-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.university-metric-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.university-metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.university-metric-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.university-metric-label {
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.university-metric-value {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.university-metric-track {
+  width: 100%;
+  height: 0.58rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.university-metric-fill {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--theme-blue);
+}
+
+.university-analytics-page {
+  overflow: hidden;
+}
+
+.university-analytics-page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3.5rem;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0) 0%, rgba(31, 41, 55, 0.9) 68%, rgba(31, 41, 55, 1) 100%);
+  pointer-events: none;
+  border-radius: 0 0 20px 20px;
+  z-index: 5;
+}
+
+.university-analytics-scroll {
+  height: 95%;
+  scroll-snap-type: none;
+}
+
+.opportunities-list.university-analytics-scroll {
+  height: 95% !important;
+}
+/* analytics big cards */
+.university-analytics-grid .university-section-card:nth-child(1) {
+  background: var(--uni-grad-2);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-analytics-grid .university-section-card:nth-child(2) {
+  background: var(--uni-grad-3);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-analytics-grid .university-section-card:nth-child(3) {
+  background: var(--uni-grad-4);
+  border: 1px solid var(--uni-border-2);
+}
+
+.university-analytics-grid .university-section-card:nth-child(4) {
+  background: var(--uni-grad-5);
+  border: 1px solid var(--uni-border-3);
+}
+/* metric bars stay blue because they are functional data accents */
+.university-metric-fill {
+  background: linear-gradient(90deg, #4f8fe8 0%, #6aa7f0 100%);
+}

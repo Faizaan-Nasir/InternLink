@@ -1,0 +1,161 @@
+.university-students-page {
+  top: 20vh;
+}
+
+.university-inline-status {
+  margin-top: 0.45rem;
+}
+
+.university-small-pill {
+  min-height: 1.7rem;
+  min-width: 5.8rem;
+  padding: 0 0.9rem;
+  font-size: 0.76rem;
+}
+
+.university-details-block {
+  align-items: flex-start;
+}
+
+.university-skills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  max-width: 65%;
+}
+.university-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.85rem 0.95rem 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.university-panel-header-split {
+  position: sticky;
+  top: 0;
+  background-color: #2b3649;
+  z-index: 2;
+}
+
+.university-panel-heading {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.university-filter-select {
+  min-height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0 0.8rem;
+  outline: none;
+}
+
+.university-filter-select option {
+  color: #0f172a;
+}
+
+.university-mini-meta {
+  margin-top: 0.28rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+.university-app-row {
+  align-items: flex-start;
+}
+
+.university-details-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.university-edit-btn {
+  width: auto;
+  min-width: 7rem;
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+.university-student-quickstats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.university-quickstat-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.university-quickstat-card strong {
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.university-quickstat-label {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.university-topbar-students {
+  align-items: center;
+}
+/* students page main columns */
+.jobs-panel.university-surface-default {
+  background: var(--uni-grad-1);
+  border: 1px solid var(--uni-border-1);
+}
+
+.details-panel.university-surface-default {
+  background: var(--uni-grad-3);
+  border: 1px solid var(--uni-border-2);
+}
+
+.applicants-panel.university-surface-default {
+  background: var(--uni-grad-2);
+  border: 1px solid var(--uni-border-1);
+}
+/* student quick stats */
+.university-quickstat-card:nth-child(1) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, #273545 100%);
+  border: 1px solid var(--uni-border-1);
+}
+
+.university-quickstat-card:nth-child(2) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, #2b394a 100%);
+  border: 1px solid var(--uni-border-2);
+}
+
+.university-quickstat-card:nth-child(3) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0%, #304052 100%);
+  border: 1px solid var(--uni-border-2);
+}
+
+/* selected state stays in same hue family */
+.panel-row-selected {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+}

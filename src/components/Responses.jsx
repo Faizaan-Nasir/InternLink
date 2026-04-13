@@ -81,7 +81,7 @@ export default function Responses() {
   });
 
   return (
-    <section className='opportunities-page'>
+    <section className='opportunities-page responses-page'>
       <div className='opportunities-toolbar'>
         <div className='opportunities-summary'>Total Responses: {filteredJobs.length}</div>
 
