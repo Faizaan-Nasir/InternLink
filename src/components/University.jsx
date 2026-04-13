@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Logo from "../assets/Logo.png";
 import Navbar from "./Navbar";
@@ -8,47 +8,161 @@ import UniversityCompanies from "./UniversityCompanies";
 import UniversityAnalytics from "./UniversityAnalytics";
 import StudentFormModal from "./StudentFormModal";
 import CsvImportModal from "./CsvImportModal";
-import { supabase } from "../../utils/supabase";
+import { supabase as supabaseClient } from "../../utils/supabase";
 import {
   UNIVERSITY_NAME,
   companies as universityCompanies,
-  students as universityStudents,
   universityInfo,
 } from "./universityData";
 
-export default function University() {
+export default function University({ supabase }) {
   const location = useLocation();
-  const [students, setStudents] = useState(() => initializeStudents(universityStudents));
+  const [students, setStudents] = useState([]);
+  const dbClient = supabase ?? supabaseClient;
 
+  useEffect(() => {
+    const initializeStudents = async () => {
+      try {
+        // ---------------------------
+        // 1. STUDENTS
+        // ---------------------------
+        const { data: studentsData, error: studentError } = await dbClient
+          .from("Students")
+          .select("*");
+
+        if (studentError) throw studentError;
+
+        const studentIds = (studentsData || []).map(s => s.rno);
+
+        // ---------------------------
+        // 2. APPLICATIONS
+        // ---------------------------
+        const { data: applicationsData, error: appError } = await dbClient
+          .from("Applications")
+          .select("*")
+          .in("student_id", studentIds);
+        console.log("Applications data:", applicationsData);
+        if (appError) throw appError;
+
+        const internshipIds = (applicationsData || []).map(a => a.internship_id);
+
+        // ---------------------------
+        // 3. INTERNSHIPS + COMPANIES
+        // ---------------------------
+        const { data: internshipsData, error: internshipError } = await dbClient
+          .from("Internships")
+          .select("id, role, company_id, Companies(name)")
+          .in("id", internshipIds);
+
+        if (internshipError) throw internshipError;
+
+        // ---------------------------
+        // 4. RESPONSES
+        // ---------------------------
+        const { data: responsesData, error: responseError } = await dbClient
+          .from("Responses")
+          .select("id, decision")
+          .in("student_id", studentIds);
+
+        if (responseError) throw responseError;
+
+        // ---------------------------
+        // MAPS (FAST LOOKUPS)
+        // ---------------------------
+        const internshipMap = new Map(
+          (internshipsData || []).map(i => [i.id, i])
+        );
+
+        const responseMap = new Map(
+          (responsesData || []).map(r => [r.id, r])
+        );
+
+        const applicationsByStudent = new Map();
+
+        (applicationsData || []).forEach(app => {
+          if (!applicationsByStudent.has(app.student_id)) {
+            applicationsByStudent.set(app.student_id, []);
+          }
+          applicationsByStudent.get(app.student_id).push(app);
+        });
+
+        // ---------------------------
+        // FINAL STRUCTURE
+        // ---------------------------
+        const formattedStudents = (studentsData || []).map((student, index) => {
+          const studentApps = applicationsByStudent.get(student.rno) || [];
+
+          return {
+            id: student.rno || `stu-${index + 1}`,
+            rno: student.rno,
+            name: student.name || "",
+            branch: student.branch || "",
+            year: Number(student.year) || 1,
+            cgpa: Number(student.cgpa) || 0,
+            email: student.email || "",
+            phone: student.ph || "",
+            university: UNIVERSITY_NAME,
+            resumeUploaded: Boolean(student.resumeUploaded),
+            resumeName: student.resumeName || "Not uploaded",
+            skills: Array.isArray(student.skills) ? student.skills : [],
+
+            applications: studentApps.map((app, appIndex) => {
+              const internship = internshipMap.get(app.internship_id);
+              const response = responseMap.get(app.id);
+
+              return {
+                id: app.id || `app-${student.rno}-${appIndex + 1}`,
+                company: internship?.Companies?.name || "Unknown Company",
+                role: internship?.role || "Internship Role",
+                status: normalizeApplicationStatus(response?.decision),
+                appliedAgo: app.appliedAgo || "Recently",
+              };
+            }),
+          };
+        });
+
+        setStudents(formattedStudents);
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      }
+    };
+
+    initializeStudents();
+  }, [dbClient]);
+
+  // ---------------------------
+  // UI STATE (UNCHANGED)
+  // ---------------------------
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [studentModalMode, setStudentModalMode] = useState("add");
   const [editingStudent, setEditingStudent] = useState(null);
-
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
 
   const activeTab = useMemo(() => getActiveTabFromPath(location.pathname), [location.pathname]);
 
   const universityLinks = useMemo(
     () => [
-      { to: "/university/overview", label: "Overview" },
-      { to: "/university/students", label: "Students" },
-      { to: "/university/companies", label: "Companies" },
-      { to: "/university/analytics", label: "Analytics" },
+      { to: "/Overview", label: "Overview" },
+      { to: "/Students", label: "Students" },
+      { to: "/Companies", label: "Companies" },
+      { to: "/Analytics", label: "Analytics" },
     ],
     []
   );
 
+  // ---------------------------
+  // OVERVIEW + ANALYTICS
+  // ---------------------------
   const overviewStats = useMemo(() => {
     const totalStudents = students.length;
-    const allApplications = students.flatMap((student) => student.applications);
-    const selectedCount = allApplications.filter(
-      (application) => application.status === "Selected"
-    ).length;
+    const allApplications = students.flatMap(s => s.applications);
+
+    const selectedCount = allApplications.filter(a => a.status === "Selected").length;
 
     const avgCgpa =
       totalStudents > 0
         ? (
-          students.reduce((sum, student) => sum + Number(student.cgpa || 0), 0) /
+          students.reduce((sum, s) => sum + Number(s.cgpa || 0), 0) /
           totalStudents
         ).toFixed(2)
         : "0.00";
@@ -62,321 +176,80 @@ export default function University() {
   }, [students]);
 
   const companies = useMemo(() => {
-    return universityCompanies.map((company) => {
-      const applications = students.flatMap((student) =>
+    return universityCompanies.map(company => {
+      const apps = students.flatMap(student =>
         student.applications
-          .filter((application) => application.company === company.name)
-          .map((application) => ({
-            ...application,
+          .filter(app => app.company === company.name)
+          .map(app => ({
+            ...app,
             studentName: student.name,
           }))
       );
 
-      const uniqueStudentsApplied = new Set(
-        applications.map((application) => application.studentName)
-      ).size;
-
       return {
         ...company,
-        studentsApplied: uniqueStudentsApplied,
-        applications,
+        studentsApplied: new Set(apps.map(a => a.studentName)).size,
+        applications: apps,
       };
     });
   }, [students]);
 
-  const analyticsData = useMemo(() => {
-    const allApplications = students.flatMap((student) => student.applications);
-
-    const placementRate = students.length
-      ? Math.round(
-        (allApplications.filter((application) => application.status === "Selected").length /
-          students.length) *
-        100
-      )
-      : 0;
-
-    const resumeCoverage = students.length
-      ? Math.round(
-        (students.filter((student) => student.resumeUploaded).length / students.length) *
-        100
-      )
-      : 0;
-
-    const eligibleProfileCompletion = students.length
-      ? Math.round(
-        (students.filter(
-          (student) =>
-            student.email &&
-            student.skills.length &&
-            student.resumeUploaded
-        ).length /
-          students.length) *
-        100
-      )
-      : 0;
-
-    const avgApplicationsPerStudent = students.length
-      ? (allApplications.length / students.length).toFixed(1)
-      : "0.0";
-
-    const branchMap = {};
-    const statusMap = { Applied: 0, Shortlisted: 0, Selected: 0, Rejected: 0 };
-    const skillMap = {};
-    const cgpaBands = {
-      "9.0+": 0,
-      "8.0 - 8.99": 0,
-      "7.0 - 7.99": 0,
-      "< 7.0": 0,
-    };
-
-    students.forEach((student) => {
-      const branchShort = student.branch.includes("Computer")
-        ? "CSE"
-        : student.branch.includes("Information")
-          ? "ISE"
-          : student.branch.includes("Electronics")
-            ? "ECE"
-            : "Other";
-
-      branchMap[branchShort] = (branchMap[branchShort] || 0) + student.applications.length;
-
-      student.skills.forEach((skill) => {
-        skillMap[skill] = (skillMap[skill] || 0) + 1;
-      });
-
-      const cgpa = Number(student.cgpa);
-      if (cgpa >= 9) cgpaBands["9.0+"] += 1;
-      else if (cgpa >= 8) cgpaBands["8.0 - 8.99"] += 1;
-      else if (cgpa >= 7) cgpaBands["7.0 - 7.99"] += 1;
-      else cgpaBands["< 7.0"] += 1;
-    });
-
-    allApplications.forEach((application) => {
-      if (statusMap[application.status] !== undefined) {
-        statusMap[application.status] += 1;
-      }
-    });
-
-    return {
-      placementRate,
-      resumeCoverage,
-      eligibleProfileCompletion,
-      avgApplicationsPerStudent,
-      branchApplications: Object.entries(branchMap).map(([label, value]) => ({
-        label,
-        value,
-      })),
-      statusBreakdown: Object.entries(statusMap).map(([label, value]) => ({
-        label,
-        value,
-      })),
-      topSkills: Object.entries(skillMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([label, value]) => ({
-          label,
-          value,
-        })),
-      cgpaBands: Object.entries(cgpaBands).map(([label, value]) => ({
-        label,
-        value,
-      })),
-    };
-  }, [students]);
-
-  function openAddStudentModal() {
-    setStudentModalMode("add");
-    setEditingStudent(null);
-    setIsStudentModalOpen(true);
-  }
-
-  function openEditStudentModal(student) {
-    setStudentModalMode("edit");
-    setEditingStudent(student);
-    setIsStudentModalOpen(true);
-  }
-
-  function closeStudentModal() {
-    setIsStudentModalOpen(false);
-    setEditingStudent(null);
-  }
-
-  function openCsvModal() {
-    setIsCsvModalOpen(true);
-  }
-
-  function closeCsvModal() {
-    setIsCsvModalOpen(false);
-  }
-
-  function handleSaveStudent(studentData) {
-    if (studentModalMode === "edit" && editingStudent) {
-      setStudents((prev) =>
-        prev.map((student) =>
-          student.id === editingStudent.id
-            ? {
-              ...student,
-              ...studentData,
-            }
-            : student
-        )
-      );
-    } else {
-      const newStudent = {
-        id: `stu-${Date.now()}`,
-        university: UNIVERSITY_NAME,
-        applications: [],
-        ...studentData,
-      };
-
-      setStudents((prev) => [newStudent, ...prev]);
-    }
-
-    closeStudentModal();
-  }
-
-  function handleImportStudents(importedRows) {
-    setStudents((prev) => {
-      const byRno = new Map(prev.map((student) => [Number(student.rno), student]));
-
-      importedRows.forEach((student) => {
-        const existing = byRno.get(Number(student.rno));
-
-        if (existing) {
-          byRno.set(Number(student.rno), {
-            ...existing,
-            ...student,
-            id: existing.id,
-            applications: existing.applications || [],
-          });
-        } else {
-          byRno.set(Number(student.rno), {
-            ...student,
-            id: student.id || `stu-${Date.now()}-${student.rno}`,
-            university: student.university || UNIVERSITY_NAME,
-            applications: student.applications || [],
-          });
-        }
-      });
-
-      return Array.from(byRno.values());
-    });
-  }
-
+  // ---------------------------
+  // RENDER
+  // ---------------------------
   function renderPage() {
     switch (activeTab) {
-      case "overview":
+      case "Overview":
         return (
           <UniversityOverview
             universityInfo={universityInfo}
             overviewStats={overviewStats}
-            onAddStudent={openAddStudentModal}
-            onImportCsv={openCsvModal}
+            onAddStudent={() => setIsStudentModalOpen(true)}
+            onImportCsv={() => setIsCsvModalOpen(true)}
           />
         );
-      case "students":
+      case "Students":
         return (
           <UniversityStudents
             students={students}
-            onAddStudent={openAddStudentModal}
-            onEditStudent={openEditStudentModal}
-            onImportCsv={openCsvModal}
+            onAddStudent={() => setIsStudentModalOpen(true)}
           />
         );
-      case "companies":
+      case "Companies":
         return <UniversityCompanies companies={companies} />;
-      case "analytics":
-        return <UniversityAnalytics analyticsData={analyticsData} />;
+      case "Analytics":
+        return <UniversityAnalytics analyticsData={{}} />;
       default:
-        return (
-          <UniversityOverview
-            universityInfo={universityInfo}
-            overviewStats={overviewStats}
-            onAddStudent={openAddStudentModal}
-            onImportCsv={openCsvModal}
-          />
-        );
+        return null;
     }
   }
 
   return (
-    <>
-      <div className="main-content">
-        <img
-          src={Logo}
-          alt="InternLink logo"
-          className="logo"
-          onClick={() => supabase.auth.signOut()}
-        />
-
-        <h1 className="title">University Dashboard</h1>
-        <div className="title-underline" />
-
-        <Navbar
-          links={universityLinks}
-          className="navbar"
-        />
-
-        {renderPage()}
-      </div>
-
-      <StudentFormModal
-        isOpen={isStudentModalOpen}
-        mode={studentModalMode}
-        initialData={editingStudent}
-        onClose={closeStudentModal}
-        onSave={handleSaveStudent}
+    <div className="main-content">
+      <img
+        src={Logo}
+        alt="InternLink logo"
+        className="logo"
+        onClick={() => dbClient.auth.signOut()}
       />
 
-      <CsvImportModal
-        isOpen={isCsvModalOpen}
-        onClose={closeCsvModal}
-        onImport={handleImportStudents}
-      />
-    </>
+      <h1 className="title">University Dashboard</h1>
+      <Navbar links={universityLinks} />
+
+      {renderPage()}
+    </div>
   );
 }
 
-function initializeStudents(seedStudents) {
-  return (seedStudents || []).map((student, index) => ({
-    id: student.id || `stu-${student.rno || index + 1}`,
-    rno: student.rno || index + 1,
-    name: student.name || "",
-    branch: student.branch || "",
-    year: Number(student.year) || 1,
-    cgpa: Number(student.cgpa) || 0,
-    email: student.email || "",
-    phone: student.phone || "",
-    university: student.university || UNIVERSITY_NAME,
-    resumeUploaded: Boolean(student.resumeUploaded),
-    resumeName: student.resumeName || "Not uploaded",
-    skills: Array.isArray(student.skills) ? student.skills : [],
-    applications: Array.isArray(student.applications)
-      ? student.applications.map((application, applicationIndex) => ({
-        id: application.id || `app-${student.rno || index + 1}-${applicationIndex + 1}`,
-        company: application.company || "Unknown Company",
-        role: application.role || "Internship Role",
-        status: normalizeApplicationStatus(application.status),
-        appliedAgo: application.appliedAgo || "Recently",
-      }))
-      : [],
-  }));
-}
-
 function getActiveTabFromPath(pathname) {
-  const lastSegment = pathname.split("/").filter(Boolean).pop() || "overview";
-  const allowedTabs = new Set(["overview", "students", "companies", "analytics"]);
-
-  if (allowedTabs.has(lastSegment.toLowerCase())) {
-    return lastSegment.toLowerCase();
-  }
-
-  return "overview";
+  const last = pathname.split("/").filter(Boolean).pop() || "overview";
+  return ["Overview", "Students", "Companies", "Analytics"].includes(last)
+    ? last
+    : "Overview";
 }
 
 function normalizeApplicationStatus(status) {
   const value = String(status || "").toLowerCase();
-
   if (value === "selected") return "Selected";
   if (value === "shortlisted") return "Shortlisted";
   if (value === "rejected") return "Rejected";

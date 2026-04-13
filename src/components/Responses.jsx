@@ -2,57 +2,6 @@ import { useEffect, useState } from 'react';
 import Job from './Job';
 import SearchBar from './SearchBar';
 
-const sampleResponses = [
-  {
-    title: 'AI Research Intern',
-    company: 'OpenAI Inc.',
-    skills: ['PyTorch', 'Transformers', 'Python'],
-    stipend: 45000,
-    location: 'Bengaluru',
-    duration: '6 months',
-    applyBefore: '2026-06-10',
-    minCgpa: 8.5,
-    minEligibility: 'Year 4',
-    status: 'Accepted',
-  },
-  {
-    title: 'Cloud Engineer Intern',
-    company: 'Amazon Inc.',
-    skills: ['AWS', 'Linux', 'Networking'],
-    stipend: 36000,
-    location: 'Hyderabad',
-    duration: '5 months',
-    applyBefore: '2026-05-18',
-    minCgpa: 8.0,
-    minEligibility: 'Year 3',
-    status: 'Rejected',
-  },
-  {
-    title: 'Frontend Intern',
-    company: 'Adobe Inc.',
-    skills: ['React', 'TypeScript', 'CSS'],
-    stipend: 30000,
-    location: 'Noida',
-    duration: '6 months',
-    applyBefore: '2026-05-28',
-    minCgpa: 7.8,
-    minEligibility: 'Year 3',
-    status: 'Waitlist',
-  },
-  {
-    title: 'Data Engineer Intern',
-    company: 'Microsoft Inc.',
-    skills: ['SQL', 'ETL', 'Azure'],
-    stipend: 38000,
-    location: 'Pune',
-    duration: '6 months',
-    applyBefore: '2026-06-04',
-    minCgpa: 8.2,
-    minEligibility: 'Year 3',
-    status: 'Accepted',
-  },
-];
-
 function getStipendValue(stipend) {
   if (typeof stipend === 'number') {
     return stipend;
@@ -71,7 +20,7 @@ export default function Responses({ supabase }) {
       if (error) {
         console.error('Error fetching responses:', error);
       } else {
-        const formattedResponses = data.map((response) => ({
+        const formattedResponses = data.map((response) => (response.Responses?.[0]?.decision ? response : null)).filter(Boolean).map((response) => ({
           title: response.role,
           company: response.Companies.name,
           skills: response.Internship_Skills.map((skill) => skill.Skills.name),

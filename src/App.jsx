@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Company from './components/Company';
 import Login from './components/Login';
 import Student from './components/Student';
+import University from './components/University';
 import ViewError from './components/ViewError';
 import { supabase } from '../utils/supabase';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
@@ -91,8 +92,8 @@ function AppShell() {
 
       setCategory(data.category);
 
-      if (data.category !== 'Student' && data.category !== 'Company') {
-        console.error('Unauthorized access: User is not a student or company');
+      if (data.category !== 'Student' && data.category !== 'Company' && data.category !== 'University') {
+        console.error('Unauthorized access: User is not a student or company or university');
         await supabase.auth.signOut();
         return;
       }
@@ -108,7 +109,7 @@ function AppShell() {
   }, [authReady, user?.id]);
 
   useEffect(() => {
-    if (!authReady || !roleReady || !user || (category !== 'Student' && category !== 'Company')) {
+    if (!authReady || !roleReady || !user || (category !== 'Student' && category !== 'Company' && category !== 'University')) {
       return;
     }
 
@@ -118,10 +119,14 @@ function AppShell() {
     if (location.pathname.toLowerCase() === '/login' && category === 'Company') {
       navigate('/CreateJob', { replace: true });
     }
+    if (location.pathname.toLowerCase() === '/login' && category === 'University') {
+      navigate('/Overview', { replace: true });
+    }
   }, [authReady, roleReady, user, category, location.pathname, navigate]);
 
   const shouldShowStudent = authReady && !!user && roleReady && category === 'Student';
   const shouldShowCompany = authReady && !!user && roleReady && category === 'Company';
+  const shouldShowUniversity = authReady && !!user && roleReady && category === 'University';
 
   return (
     <div className="App">
@@ -130,6 +135,8 @@ function AppShell() {
         <Company supabase={supabase} />
       ) : shouldShowStudent ? (
         <Student supabase={supabase} />
+      ) : shouldShowUniversity ? (
+        <University supabase={supabase} />
       ) : (
         <div className='main-content login-shell'>
           <Routes>
