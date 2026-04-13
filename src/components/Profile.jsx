@@ -17,22 +17,8 @@ const SAMPLE_STUDENT = {
     url: '#',
   },
   skills: ['Python', 'React', 'Data Structures'],
+  rno: 0
 };
-
-const AVAILABLE_SKILLS = [
-  'Python',
-  'Java',
-  'C++',
-  'JavaScript',
-  'TypeScript',
-  'React',
-  'Node.js',
-  'SQL',
-  'Data Structures',
-  'Machine Learning',
-  'Cloud Computing',
-  'Cyber Security',
-];
 
 export default function Profile({ supabase }) {
   const [pendingResumeName, setPendingResumeName] = useState('');
@@ -40,8 +26,30 @@ export default function Profile({ supabase }) {
   const [studentSkills, setStudentSkills] = useState([]);
   const [nextSkill, setNextSkill] = useState('');
   const [student, setStudent] = useState(SAMPLE_STUDENT);
+  const [AVAILABLE_SKILLS, setAVAILABLE_SKILLS] = useState([
+    'Python',
+    'Java',
+    'C++',
+    'JavaScript',
+    'TypeScript',
+    'React',
+    'Node.js',
+    'SQL',
+    'Data Structures',
+    'Machine Learning',
+    'Cloud Computing',
+    'Cyber Security',
+  ]);
 
   useEffect(() => {
+    const getAvailableSkills = async () => {
+      const { data, error } = await supabase.from('Skills').select('name');
+      if (error) {
+        console.error('Error fetching available skills:', error);
+      } else {
+        setAVAILABLE_SKILLS(data.map((item) => item.name));
+      }
+    };
     const fetchStudentData = async () => {
       const { data, error } = await supabase.from('Students').select('*').single();
       if (error) {
@@ -59,21 +67,42 @@ export default function Profile({ supabase }) {
         setStudent(data);
       }
     };
-
+    getAvailableSkills();
     fetchStudentData();
   }, [supabase]);
 
 
-  const addSkill = () => {
+  const addSkill = async () => {
     if (!nextSkill || studentSkills.includes(nextSkill)) {
       return;
     }
-    setStudentSkills([...studentSkills, nextSkill]);
-    setNextSkill('');
+    const { data: skillData, error: skillError } = await supabase.from('Skills').select('skid,name').eq('name', nextSkill).single();
+    if (skillError) {
+      console.error('Error fetching skill data:', skillError);
+      return;
+    }
+    const { error: insertError } = await supabase.from('Student_Skills').insert({ sid: student.rno, skid: skillData.skid });
+    if (insertError) {
+      console.error('Error inserting student skill:', insertError);
+    } else {
+      setStudentSkills([...studentSkills, nextSkill]);
+      setNextSkill('');
+    }
   };
 
-  const removeSkill = (skillToRemove) => {
-    setStudentSkills(studentSkills.filter((skill) => skill !== skillToRemove));
+  const removeSkill = async (skillToRemove) => {
+    const { data: skillData, error: skillError } = await supabase.from('Skills').select('skid,name').eq('name', skillToRemove).single();
+    if (skillError) {
+      console.error('Error fetching skill data:', skillError);
+      return;
+    }
+    const { error: deleteError } = await supabase.from('Student_Skills').delete().eq('sid', student.rno).eq('skid', skillData.skid);
+    if (deleteError) {
+      console.error('Error deleting student skill:', deleteError);
+    }
+    else {
+      setStudentSkills(studentSkills.filter((skill) => skill !== skillToRemove));
+    }
   };
 
   const uploadPendingResume = () => {

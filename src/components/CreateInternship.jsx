@@ -60,10 +60,37 @@ export default function CreateInternship({ supabase }) {
         deadline: form.apply_before,
         max_applicants: Number(form.max_applications),
         min_cgpa: Number(form.min_cgpa),
-        min_year: Number(form.min_year),
+        min_year: Number(form.min_year)
       };
 
-      const { error: insertError } = await supabase.from('Internships').insert(internshipData);
+      const { data: insertedRow, error: insertError } = await supabase.from('Internships').insert(internshipData).select().single();
+
+      insertError && console.error('Internship insert error:', insertError);
+
+      const skills = form.skills_required.split(',').map((skill) => skill.trim());
+      const existingSkills = await supabase.from('Skills').select('skid,name');
+      for (const skill of skills) {
+        console.log(`Processing skill: ${skill}`);
+        if (skill && !existingSkills.data.some((s) => s.name.toLowerCase() === skill.toLowerCase())) {
+          console.log(`Inserting new skill: ${skill}`);
+          const { data: newSkill, error: skillError } = await supabase.from('Skills').insert({ name: skill }).select().single();
+          skillError && console.error(`Error inserting skill "${skill}":`, skillError);
+          console.log(newSkill.skid)
+          const { error: internshipSkillError } = await supabase.from('Internship_Skills').insert({
+            skid: newSkill.skid,
+            internship_id: insertedRow.id
+          });
+          internshipSkillError && console.error(`Error inserting internship skill:`, internshipSkillError);
+        } else {
+          const { error: internshipSkillError } = await supabase.from('Internship_Skills').insert({
+            skid: existingSkills.data.find((s) => s.name.toLowerCase() === skill.toLowerCase()).skid,
+            internship_id: insertedRow.id
+          });
+          internshipSkillError && console.error(`Error inserting internship skill:`, internshipSkillError);
+        }
+      }
+
+
 
       if (insertError) {
         throw insertError;
