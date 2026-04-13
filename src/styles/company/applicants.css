@@ -193,6 +193,7 @@
 
 .details-btn-secondary,
 .details-btn-accept,
+.details-btn-waitlist,
 .details-btn-reject {
   min-height: 2rem;
   border-radius: 999px;
@@ -212,6 +213,7 @@
 }
 
 .details-btn-accept,
+.details-btn-waitlist,
 .details-btn-reject {
   flex: 1;
 }
@@ -222,4 +224,34 @@
 
 .details-btn-reject {
   background-color: #dc2626;
+}
+
+.details-btn-waitlist {
+  background-color: #ca8a04;
+}
+
+.details-btn-decision {
+  width: 100%;
+  min-height: 2rem;
+  border-radius: 999px;
+  border: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 1rem;
+  color: #ffffff;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.details-btn-decision-accepted {
+  background-color: #15803d;
+}
+
+.details-btn-decision-waitlist {
+  background-color: #a16207;
+}
+
+.details-btn-decision-rejected {
+  background-color: #b91c1c;
 }

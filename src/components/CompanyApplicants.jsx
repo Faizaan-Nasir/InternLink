@@ -6,53 +6,63 @@ export default function CompanyApplicants({ supabase }) {
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState(null);
   const [jobs, setJobs] = useState([]);
-  async function getCompanyJobs() {
-    const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(name)');
-    if (error) {
-      console.error('Error fetching company jobs:', error);
-    } else {
-      console.log('Fetched company jobs:', data);
-      for (const job of data) {
-        console.log(`Job: ${job.role}, Applicants: ${job.Applications.length}`);
-        for (const app of job.Applications) {
-          console.log(`  Applicant ID: ${app.student_id}, Applied Time: ${app.applied_time}`);
-          const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
-          if (studentError) {
-            console.error(`Error fetching student data for applicant ${app.student_id}:`, studentError);
-          } else {
-            console.log(`    Student Name: ${studentData.name}, Branch: ${studentData.branch}, Year: ${studentData.year}, CGPA: ${studentData.cgpa}, University: ${studentData.university}, Skills: ${studentData.Student_Skills.map((skill) => skill.Skills.name).join(', ')}`);
-            app.name = studentData.name;
-            app.branch = studentData.branch;
-            app.year = studentData.year;
-            app.cgpa = studentData.cgpa;
-            app.phone = studentData.ph;
-            app.university = studentData.university;
-            app.email = studentData.email;
-            app.skills = studentData.Student_Skills.map((skill) => skill.Skills.name);
+  const [decisionByApplication, setDecisionByApplication] = useState({});
+
+  useEffect(() => {
+    const getCompanyJobs = async () => {
+      const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(name)');
+      if (error) {
+        console.error('Error fetching company jobs:', error);
+      } else {
+        for (const job of data) {
+          for (const app of job.Applications) {
+            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
+            const { data: acceptedResponse, error: responseError } = await supabase.from('Responses').select('decision').eq('student_id', app.student_id).eq('internship_id', job.id).single();
+            if (responseError) {
+              console.error(`Error fetching response for applicant ${app.student_id}:`, responseError);
+            } else {
+              console.log(`    Current Decision: ${acceptedResponse?.decision ?? 'No decision yet'}`);
+              const applicationKey = `${job.id}:${app.student_id}`;
+              setDecisionByApplication((previousDecisions) => ({
+                ...previousDecisions,
+                [applicationKey]: acceptedResponse?.decision ?? null
+              }));
+            }
+            if (studentError) {
+              console.error(`Error fetching student data for applicant ${app.student_id}:`, studentError);
+            } else {
+              console.log(`    Student Name: ${studentData.name}, Branch: ${studentData.branch}, Year: ${studentData.year}, CGPA: ${studentData.cgpa}, University: ${studentData.university}, Skills: ${studentData.Student_Skills.map((skill) => skill.Skills.name).join(', ')}`);
+              app.name = studentData.name;
+              app.branch = studentData.branch;
+              app.year = studentData.year;
+              app.cgpa = studentData.cgpa;
+              app.phone = studentData.ph;
+              app.university = studentData.university;
+              app.email = studentData.email;
+              app.skills = studentData.Student_Skills.map((skill) => skill.Skills.name);
+            }
           }
         }
       }
-    }
-    const temporaryJobs = data.map((job) => ({
-      id: job.id,
-      title: job.role,
-      applicantCount: job.Applications.length,
-      applicants: job.Applications.map((app) => ({
-        id: app.student_id,
-        appliedAgo: `${Math.floor((Date.now() - new Date(app.applied_time).getTime()) / (1000 * 60 * 60))}h ago`,
-        name: app.name,
-        skills: app.skills,
-        cgpa: app.cgpa,
-        branch: app.branch,
-        year: app.year,
-        phone: app.phone,
-        email: app.email,
-        university: app.university
+      const temporaryJobs = data.map((job) => ({
+        id: job.id,
+        title: job.role,
+        applicantCount: job.Applications.length,
+        applicants: job.Applications.map((app) => ({
+          id: app.student_id,
+          appliedAgo: `${Math.floor((Date.now() - new Date(app.applied_time).getTime()) / (1000 * 60 * 60))}h ago`,
+          name: app.name,
+          skills: app.skills,
+          cgpa: app.cgpa,
+          branch: app.branch,
+          year: app.year,
+          phone: app.phone,
+          email: app.email,
+          university: app.university
+        }))
       }))
-    }))
-    setJobs(temporaryJobs);
-  }
-  useEffect(() => {
+      setJobs(temporaryJobs);
+    };
     getCompanyJobs();
   }, [supabase]);
   const filteredJobs = useMemo(() => {
@@ -84,6 +94,51 @@ export default function CompanyApplicants({ supabase }) {
     setSelectedJobId(jobId);
     const job = jobs.find((item) => item.id === jobId);
     setSelectedApplicantId(job?.applicants?.[0]?.id ?? null);
+  };
+
+  const getApplicationKey = (jobId, applicantId) => `${jobId}:${applicantId}`;
+
+  const selectedDecision = useMemo(() => {
+    if (!selectedJob || !selectedApplicant) {
+      return null;
+    }
+    return decisionByApplication[getApplicationKey(selectedJob.id, selectedApplicant.id)] ?? null;
+  }, [decisionByApplication, selectedApplicant, selectedJob]);
+
+  const handleDecision = async (decision) => {
+    if (!selectedApplicant || !selectedJob) {
+      return;
+    }
+
+    const dataToBeInserted = {
+      student_id: selectedApplicant.id,
+      internship_id: selectedJob.id,
+      decision
+    };
+
+    const { error } = await supabase.from('Responses').insert(dataToBeInserted);
+
+    if (error) {
+      console.error(`Error updating applicant status to ${decision}:`, error);
+    } else {
+      const applicationKey = getApplicationKey(selectedJob.id, selectedApplicant.id);
+      setDecisionByApplication((previousDecisions) => ({
+        ...previousDecisions,
+        [applicationKey]: decision
+      }));
+    }
+  };
+
+  const handleAccept = async () => {
+    await handleDecision('Accepted');
+  };
+
+  const handleWaitlist = async () => {
+    await handleDecision('Waitlist');
+  };
+
+  const handleReject = async () => {
+    await handleDecision('Rejected');
   };
 
   return (
@@ -169,8 +224,21 @@ export default function CompanyApplicants({ supabase }) {
               <div className='details-actions details-actions-sticky'>
                 <button type='button' className='details-btn-secondary'>View Resume</button>
                 <div className='details-actions-inline'>
-                  <button type='button' className='details-btn-accept'>Accept</button>
-                  <button type='button' className='details-btn-reject'>Reject</button>
+                  {selectedDecision ? (
+                    <button
+                      type='button'
+                      className={`details-btn-decision details-btn-decision-${selectedDecision.toLowerCase()}`}
+                      disabled
+                    >
+                      {selectedDecision}
+                    </button>
+                  ) : (
+                    <>
+                      <button type='button' className='details-btn-accept' onClick={handleAccept}>Accept</button>
+                      <button type='button' className='details-btn-waitlist' onClick={handleWaitlist}>Waitlist</button>
+                      <button type='button' className='details-btn-reject' onClick={handleReject}>Reject</button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
