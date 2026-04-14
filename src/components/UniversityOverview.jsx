@@ -41,7 +41,7 @@ export default function UniversityOverview({
               <p className="university-hero-kicker">{universityInfo.subtitle}</p>
               <h2 className="university-hero-title">{universityInfo.name}</h2>
               <p className="university-hero-description">
-                {universityInfo.description}
+                Monitor student records, application performance, placement readiness, and company participation across the university from one unified admin view.
               </p>
             </div>
           </div>

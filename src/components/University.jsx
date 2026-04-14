@@ -9,23 +9,23 @@ import UniversityAnalytics from "./UniversityAnalytics";
 import StudentFormModal from "./StudentFormModal";
 import CsvImportModal from "./CsvImportModal";
 import { supabase as supabaseClient } from "../../utils/supabase";
-import {
-  UNIVERSITY_NAME,
-  companies as universityCompanies,
-  universityInfo,
-} from "./universityData";
 
 export default function University({ supabase }) {
   const location = useLocation();
   const [students, setStudents] = useState([]);
+  const [universityCompanies, setUniversityCompanies] = useState([]);
+  const [UNIVERSITY_NAME, setUNIVERSITY_NAME] = useState("Loading...");
+  const [universityInfo, setUniversityInfo] = useState({
+    name: "Loading...",
+    subtitle: "Loading...",
+    description: "Loading...",
+    image: "Loading...",
+  });
   const dbClient = supabase ?? supabaseClient;
 
   useEffect(() => {
     const initializeStudents = async () => {
       try {
-        // ---------------------------
-        // 1. STUDENTS
-        // ---------------------------
         const { data: studentsData, error: studentError } = await dbClient
           .from("Students")
           .select("*");
@@ -34,9 +34,6 @@ export default function University({ supabase }) {
 
         const studentIds = (studentsData || []).map(s => s.rno);
 
-        // ---------------------------
-        // 2. APPLICATIONS
-        // ---------------------------
         const { data: applicationsData, error: appError } = await dbClient
           .from("Applications")
           .select("*")
@@ -46,9 +43,6 @@ export default function University({ supabase }) {
 
         const internshipIds = (applicationsData || []).map(a => a.internship_id);
 
-        // ---------------------------
-        // 3. INTERNSHIPS + COMPANIES
-        // ---------------------------
         const { data: internshipsData, error: internshipError } = await dbClient
           .from("Internships")
           .select("id, role, company_id, Companies(name)")
@@ -56,9 +50,6 @@ export default function University({ supabase }) {
 
         if (internshipError) throw internshipError;
 
-        // ---------------------------
-        // 4. RESPONSES
-        // ---------------------------
         const { data: responsesData, error: responseError } = await dbClient
           .from("Responses")
           .select("id, decision")
@@ -66,9 +57,6 @@ export default function University({ supabase }) {
 
         if (responseError) throw responseError;
 
-        // ---------------------------
-        // MAPS (FAST LOOKUPS)
-        // ---------------------------
         const internshipMap = new Map(
           (internshipsData || []).map(i => [i.id, i])
         );
@@ -86,9 +74,6 @@ export default function University({ supabase }) {
           applicationsByStudent.get(app.student_id).push(app);
         });
 
-        // ---------------------------
-        // FINAL STRUCTURE
-        // ---------------------------
         const formattedStudents = (studentsData || []).map((student, index) => {
           const studentApps = applicationsByStudent.get(student.rno) || [];
 
@@ -122,17 +107,50 @@ export default function University({ supabase }) {
         });
 
         setStudents(formattedStudents);
+      } catch (error) {
+        console.error("Error initializing students:", error);
+      }
+    };
+    const initializeCompanies = async () => {
+      try {
+        const { data: companiesData, error: companiesError } = await dbClient
+          .from("Companies")
+          .select("*");
+
+        if (companiesError) throw companiesError;
+
+        setUniversityCompanies(companiesData || []);
       } catch (err) {
-        console.error("Error fetching students:", err);
+        console.error("Error fetching companies:", err);
+      }
+    };
+    const initializeUniversityInfo = async () => {
+      try {
+        const { data, error } = await dbClient
+          .from("Universities")
+          .select("name,subtitle")
+          .single();
+        if (!error) {
+          setUNIVERSITY_NAME(data?.name || "Unknown University");
+          setUniversityInfo(prev => ({
+            ...prev,
+            name: data?.name || "Unknown University",
+            subtitle: data?.subtitle || "Unknown Subtitle",
+          }));
+        }
+        else {
+          throw error;
+        }
+      } catch (err) {
+        console.error("Error fetching university info:", err);
       }
     };
 
+    initializeCompanies();
     initializeStudents();
+    initializeUniversityInfo();
   }, [dbClient]);
 
-  // ---------------------------
-  // UI STATE (UNCHANGED)
-  // ---------------------------
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [studentModalMode, setStudentModalMode] = useState("add");
   const [editingStudent, setEditingStudent] = useState(null);
@@ -140,6 +158,31 @@ export default function University({ supabase }) {
 
   const activeTab = useMemo(() => getActiveTabFromPath(location.pathname), [location.pathname]);
 
+
+  function openAddStudentModal() {
+    setStudentModalMode("add");
+    setEditingStudent(null);
+    setIsStudentModalOpen(true);
+  }
+
+  function openEditStudentModal(student) {
+    setStudentModalMode("edit");
+    setEditingStudent(student);
+    setIsStudentModalOpen(true);
+  }
+
+  function closeStudentModal() {
+    setIsStudentModalOpen(false);
+    setEditingStudent(null);
+  }
+
+  function openCsvModal() {
+    setIsCsvModalOpen(true);
+  }
+
+  function closeCsvModal() {
+    setIsCsvModalOpen(false);
+  }
   const universityLinks = useMemo(
     () => [
       { to: "/Overview", label: "Overview" },
@@ -150,9 +193,6 @@ export default function University({ supabase }) {
     []
   );
 
-  // ---------------------------
-  // OVERVIEW + ANALYTICS
-  // ---------------------------
   const overviewStats = useMemo(() => {
     const totalStudents = students.length;
     const allApplications = students.flatMap(s => s.applications);
@@ -192,11 +232,55 @@ export default function University({ supabase }) {
         applications: apps,
       };
     });
-  }, [students]);
+  }, [students, universityCompanies]);
+  function handleSaveStudent(studentData) {
+    if (studentModalMode === "edit" && editingStudent) {
+      setStudents(prev =>
+        prev.map(s =>
+          s.id === editingStudent.id ? { ...s, ...studentData } : s
+        )
+      );
+    } else {
+      const newStudent = {
+        id: `stu-${Date.now()}`,
+        university: UNIVERSITY_NAME,
+        applications: [],
+        ...studentData,
+      };
 
-  // ---------------------------
-  // RENDER
-  // ---------------------------
+      setStudents(prev => [newStudent, ...prev]);
+    }
+
+    closeStudentModal();
+  }
+
+  function handleImportStudents(importedRows) {
+    setStudents(prev => {
+      const map = new Map(prev.map(s => [Number(s.rno), s]));
+
+      importedRows.forEach(student => {
+        const existing = map.get(Number(student.rno));
+
+        if (existing) {
+          map.set(Number(student.rno), {
+            ...existing,
+            ...student,
+            id: existing.id,
+            applications: existing.applications || [],
+          });
+        } else {
+          map.set(Number(student.rno), {
+            ...student,
+            id: `stu-${Date.now()}-${student.rno}`,
+            university: UNIVERSITY_NAME,
+            applications: [],
+          });
+        }
+      });
+
+      return Array.from(map.values());
+    });
+  }
   function renderPage() {
     switch (activeTab) {
       case "Overview":
@@ -225,19 +309,34 @@ export default function University({ supabase }) {
   }
 
   return (
-    <div className="main-content">
-      <img
-        src={Logo}
-        alt="InternLink logo"
-        className="logo"
-        onClick={() => dbClient.auth.signOut()}
+    <>
+      <div className="main-content">
+        <img
+          src={Logo}
+          alt="InternLink logo"
+          className="logo"
+          onClick={() => dbClient.auth.signOut()}
+        />
+
+        <h1 className="title">University Dashboard</h1>
+        <Navbar links={universityLinks} />
+
+        {renderPage()}
+      </div>
+      <StudentFormModal
+        isOpen={isStudentModalOpen}
+        mode={studentModalMode}
+        initialData={editingStudent}
+        onClose={closeStudentModal}
+        onSave={handleSaveStudent}
       />
 
-      <h1 className="title">University Dashboard</h1>
-      <Navbar links={universityLinks} />
-
-      {renderPage()}
-    </div>
+      <CsvImportModal
+        isOpen={isCsvModalOpen}
+        onClose={closeCsvModal}
+        onImport={handleImportStudents}
+      />
+    </>
   );
 }
 

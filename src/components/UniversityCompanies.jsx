@@ -5,16 +5,28 @@ export default function UniversityCompanies({ companies }) {
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
 
-  const sectors = ["All", ...new Set(companies.map((company) => company.sector))];
+  const sectors = useMemo(() => {
+    const uniqueSectors = new Set(
+      companies.map((company) => company.sector || "Unknown")
+    );
+
+    return ["All", ...uniqueSectors];
+  }, [companies]);
 
   const filteredCompanies = useMemo(() => {
+    const searchQuery = search.toLowerCase();
+
     return companies.filter((company) => {
+      const companyName = company.name || "";
+      const companyLocation = company.location || "";
+      const companySector = company.sector || "Unknown";
+
       const matchesSearch =
-        company.name.toLowerCase().includes(search.toLowerCase()) ||
-        company.location.toLowerCase().includes(search.toLowerCase());
+        companyName.toLowerCase().includes(searchQuery) ||
+        companyLocation.toLowerCase().includes(searchQuery);
 
       const matchesSector =
-        sectorFilter === "All" || company.sector === sectorFilter;
+        sectorFilter === "All" || companySector === sectorFilter;
 
       return matchesSearch && matchesSector;
     });
@@ -44,45 +56,52 @@ export default function UniversityCompanies({ companies }) {
 
       <div className="opportunities-list university-scroll-list university-overview-scroll university-companies-scroll">
         <div className="university-company-grid">
-          {filteredCompanies.map((company) => (
-            <div
-              key={company.id}
-              className="section-card university-section-card university-company-card-enhanced"
-            >
-              <div className="university-company-card-top">
-                <div>
-                  <h3 className="section-title university-section-title-tight">
-                    {company.name}
-                  </h3>
-                  <p className="university-row-subtext">
-                    {company.sector} • {company.location}
-                  </p>
+          {filteredCompanies.map((company, index) => {
+            const companyKey =
+              company.id ??
+              company.cid ??
+              `${company.name || "company"}-${company.location || "location"}-${index}`;
+
+            return (
+              <div
+                key={companyKey}
+                className="section-card university-section-card university-company-card-enhanced"
+              >
+                <div className="university-company-card-top">
+                  <div>
+                    <h3 className="section-title university-section-title-tight">
+                      {company.name || "Unnamed Company"}
+                    </h3>
+                    <p className="university-row-subtext">
+                      {company.sector || "Unknown"} • {company.location || "Unknown"}
+                    </p>
+                  </div>
+
+                  <div className="university-company-count">
+                    <span>{company.studentsApplied}</span>
+                    <small>students applied</small>
+                  </div>
                 </div>
 
-                <div className="university-company-count">
-                  <span>{company.studentsApplied}</span>
-                  <small>students applied</small>
+                <div className="info-row">
+                  <span className="info-label">Open Roles</span>
+                  <span className="info-value">{company.openRoles}</span>
+                </div>
+
+                <div className="info-row">
+                  <span className="info-label">Applications</span>
+                  <span className="info-value">{company.applications?.length || 0}</span>
+                </div>
+
+                <div className="info-row">
+                  <span className="info-label">Latest Interest</span>
+                  <span className="info-value">
+                    {company.applications?.[0]?.studentName ?? "No applications yet"}
+                  </span>
                 </div>
               </div>
-
-              <div className="info-row">
-                <span className="info-label">Open Roles</span>
-                <span className="info-value">{company.openRoles}</span>
-              </div>
-
-              <div className="info-row">
-                <span className="info-label">Applications</span>
-                <span className="info-value">{company.applications.length}</span>
-              </div>
-
-              <div className="info-row">
-                <span className="info-label">Latest Interest</span>
-                <span className="info-value">
-                  {company.applications[0]?.studentName ?? "No applications yet"}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredCompanies.length === 0 && (
