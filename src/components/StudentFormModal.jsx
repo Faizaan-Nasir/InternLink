@@ -70,7 +70,7 @@ export default function StudentFormModal({
       year: Number(form.year),
       cgpa: Number(form.cgpa),
       email: form.email.trim(),
-      phone: form.phone.trim(),
+      phone: form.phone,
       resumeUploaded: form.resumeUploaded,
       resumeName: form.resumeUploaded
         ? form.resumeName.trim() || "Resume.pdf"

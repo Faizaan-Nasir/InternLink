@@ -20,6 +20,7 @@ export default function University({ supabase }) {
     subtitle: "Loading...",
     description: "Loading...",
     image: "Loading...",
+    id: null
   });
   const dbClient = supabase ?? supabaseClient;
 
@@ -128,7 +129,7 @@ export default function University({ supabase }) {
       try {
         const { data, error } = await dbClient
           .from("Universities")
-          .select("name,subtitle")
+          .select("university_id,name,subtitle")
           .single();
         if (!error) {
           setUNIVERSITY_NAME(data?.name || "Unknown University");
@@ -136,6 +137,7 @@ export default function University({ supabase }) {
             ...prev,
             name: data?.name || "Unknown University",
             subtitle: data?.subtitle || "Unknown Subtitle",
+            id: data?.university_id || null
           }));
         }
         else {
@@ -149,7 +151,7 @@ export default function University({ supabase }) {
     initializeCompanies();
     initializeStudents();
     initializeUniversityInfo();
-  }, [dbClient]);
+  }, [dbClient, UNIVERSITY_NAME]);
 
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [studentModalMode, setStudentModalMode] = useState("add");
@@ -215,6 +217,116 @@ export default function University({ supabase }) {
     ];
   }, [students]);
 
+  const analyticsData = useMemo(() => {
+    if (!students || students.length === 0) {
+      return {
+        placementRate: 0,
+        resumeCoverage: 0,
+        eligibleProfileCompletion: 0,
+        avgApplicationsPerStudent: 0,
+        branchApplications: [],
+        statusBreakdown: [],
+        topSkills: [],
+        cgpaBands: [],
+      };
+    }
+
+    const totalStudents = students.length;
+    const allApplications = students.flatMap(s => s.applications);
+
+    // Placement Rate: percentage of students with at least one "Selected" application
+    const studentsWithPlacement = new Set(
+      allApplications
+        .filter(app => app.status === "Selected")
+        .map(app => {
+          const student = students.find(s =>
+            s.applications && s.applications.includes(app)
+          );
+          return student?.id;
+        })
+    ).size;
+    const placementRate = totalStudents > 0 ? Math.round((studentsWithPlacement / totalStudents) * 100) : 0;
+
+    // Resume Coverage: percentage of students with resume uploaded
+    const studentsWithResume = students.filter(s => s.resumeUploaded).length;
+    const resumeCoverage = totalStudents > 0 ? Math.round((studentsWithResume / totalStudents) * 100) : 0;
+
+    // Eligible Profile Completion: students with resume AND CGPA >= 7.0
+    const eligibleStudents = students.filter(s => s.resumeUploaded && Number(s.cgpa || 0) >= 7.0).length;
+    const eligibleProfileCompletion = totalStudents > 0 ? Math.round((eligibleStudents / totalStudents) * 100) : 0;
+
+    // Avg Applications per Student
+    const avgApplicationsPerStudent = totalStudents > 0 ? (allApplications.length / totalStudents).toFixed(1) : "Undefined";
+
+    // Branch Applications: count applications by branch
+    const branchMap = {};
+    students.forEach(student => {
+      const branch = student.branch || "Undefined";
+      if (!branchMap[branch]) branchMap[branch] = 0;
+      branchMap[branch] += (student.applications?.length || 0);
+    });
+    const branchApplications = Object.entries(branchMap)
+      .map(([branch, count]) => ({
+        label: branch.split(" and ")[0] || branch, // Shorten long branch names
+        value: count,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // Status Breakdown: count applications by status
+    const statusMap = {};
+    allApplications.forEach(app => {
+      const status = app.status || "Applied";
+      statusMap[status] = (statusMap[status] || 0) + 1;
+    });
+    const statusBreakdown = Object.entries(statusMap)
+      .map(([status, count]) => ({ label: status, value: count }))
+      .sort((a, b) => b.value - a.value);
+
+    // Top Skills: count skill frequency across all students
+    const skillMap = {};
+    students.forEach(student => {
+      (student.skills || []).forEach(skill => {
+        skillMap[skill] = (skillMap[skill] || 0) + 1;
+      });
+    });
+    const topSkills = Object.entries(skillMap)
+      .map(([skill, count]) => ({ label: skill, value: count }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6); // Top 6 skills
+
+    // CGPA Distribution: group students into CGPA bands
+    const cgpaMap = {
+      "7.0-7.5": 0,
+      "7.5-8.0": 0,
+      "8.0-8.5": 0,
+      "8.5-9.0": 0,
+      "9.0+": 0,
+    };
+    students.forEach(student => {
+      const cgpa = Number(student.cgpa || 0);
+      if (cgpa < 7.0) cgpaMap["7.0-7.5"]++;
+      else if (cgpa < 7.5) cgpaMap["7.0-7.5"]++;
+      else if (cgpa < 8.0) cgpaMap["7.5-8.0"]++;
+      else if (cgpa < 8.5) cgpaMap["8.0-8.5"]++;
+      else if (cgpa < 9.0) cgpaMap["8.5-9.0"]++;
+      else cgpaMap["9.0+"]++;
+    });
+    const cgpaBands = Object.entries(cgpaMap)
+      .filter(([band]) => cgpaMap[band] > 0)
+      .map(([band, count]) => ({ label: band, value: count }));
+
+    return {
+      placementRate,
+      resumeCoverage,
+      eligibleProfileCompletion,
+      avgApplicationsPerStudent,
+      branchApplications: branchApplications.length > 0 ? branchApplications : [{ label: "Undefined", value: 0 }],
+      statusBreakdown: statusBreakdown.length > 0 ? statusBreakdown : [{ label: "Undefined", value: 0 }],
+      topSkills: topSkills.length > 0 ? topSkills : [{ label: "Undefined", value: 0 }],
+      cgpaBands: cgpaBands.length > 0 ? cgpaBands : [{ label: "Undefined", value: 0 }],
+    };
+  }, [students]);
+
   const companies = useMemo(() => {
     return universityCompanies.map(company => {
       const apps = students.flatMap(student =>
@@ -233,13 +345,30 @@ export default function University({ supabase }) {
       };
     });
   }, [students, universityCompanies]);
-  function handleSaveStudent(studentData) {
+
+  async function handleSaveStudent(studentData) {
     if (studentModalMode === "edit" && editingStudent) {
       setStudents(prev =>
         prev.map(s =>
           s.id === editingStudent.id ? { ...s, ...studentData } : s
-        )
-      );
+        ));
+      const { error } = await supabase.from("Students")
+        .update({
+          rno: studentData.rno,
+          name: studentData.name,
+          branch: studentData.branch,
+          year: studentData.year,
+          cgpa: studentData.cgpa,
+          email: studentData.email,
+          ph: studentData.phone,
+          university: UNIVERSITY_NAME,
+          university_id: universityInfo.id
+        })
+        .eq("rno", editingStudent.id);
+
+      if (error) {
+        console.error("Error updating student:", error);
+      }
     } else {
       const newStudent = {
         id: `stu-${Date.now()}`,
@@ -247,7 +376,19 @@ export default function University({ supabase }) {
         applications: [],
         ...studentData,
       };
-
+      console.log(universityInfo.id);
+      const { error: insertError } = await supabase.from("Students").insert({
+        rno: newStudent.rno,
+        name: newStudent.name,
+        branch: newStudent.branch,
+        year: newStudent.year,
+        cgpa: newStudent.cgpa,
+        email: newStudent.email,
+        ph: newStudent.phone,
+        university: newStudent.university,
+        university_id: universityInfo.id
+      });
+      insertError && console.error("Error inserting student:", insertError);
       setStudents(prev => [newStudent, ...prev]);
     }
 
@@ -288,21 +429,23 @@ export default function University({ supabase }) {
           <UniversityOverview
             universityInfo={universityInfo}
             overviewStats={overviewStats}
-            onAddStudent={() => setIsStudentModalOpen(true)}
-            onImportCsv={() => setIsCsvModalOpen(true)}
+            onAddStudent={openAddStudentModal}
+            onImportCsv={openCsvModal}
           />
         );
       case "Students":
         return (
           <UniversityStudents
             students={students}
-            onAddStudent={() => setIsStudentModalOpen(true)}
+            onAddStudent={openAddStudentModal}
+            onImportCsv={openCsvModal}
+            onEditStudent={openEditStudentModal}
           />
         );
       case "Companies":
         return <UniversityCompanies companies={companies} />;
       case "Analytics":
-        return <UniversityAnalytics analyticsData={{}} />;
+        return <UniversityAnalytics analyticsData={analyticsData} />;
       default:
         return null;
     }

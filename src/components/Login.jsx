@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo.png';
 
 async function tryLogin(supabase, email, password) {
@@ -21,6 +22,7 @@ async function tryLogin(supabase, email, password) {
 }
 
 export default function Login({ supabase }) {
+  const navigate = useNavigate();
   const [loginFailed, setLoginFailed] = useState(false);
 
   const handleLogin = async (e) => {
@@ -64,7 +66,7 @@ export default function Login({ supabase }) {
             <button className='login-submit' type='submit'>
               Sign in
             </button>
-            <button className='login-secondary' type='button'>
+            <button className='login-secondary' type='button' onClick={() => navigate('/register')}>
               Create account
             </button>
           </div>

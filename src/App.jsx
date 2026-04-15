@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Company from './components/Company';
 import Login from './components/Login';
+import Register from './components/Register';
 import Student from './components/Student';
 import University from './components/University';
 import ViewError from './components/ViewError';
@@ -141,6 +142,7 @@ function AppShell() {
         <div className='main-content login-shell'>
           <Routes>
             <Route path='/login' element={<Login supabase={supabase} />} />
+            <Route path='/register' element={<Register supabase={supabase} />} />
             <Route path='*' element={<Login supabase={supabase} />} />
           </Routes>
         </div>
