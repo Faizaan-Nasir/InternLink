@@ -121,141 +121,93 @@ export default function Register({ supabase }) {
                 await supabase.auth.admin.deleteUser(signUpData.user.id);
                 return;
             }
+            supabase.auth.signOut();
         }
-        // if (category === 'University') {
-        //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        //         email: email.trim(),
-        //         password: password
-        //     });
-
-        //     if (signUpError) {
-        //         console.error(signUpError);
-        //         setFormError(signUpError.message);
-        //         return;
-        //     }
-
-        //     const { error: signInError } = await supabase.auth.signInWithPassword({
-        //         email: email.trim(),
-        //         password: password
-        //     });
-
-        //     if (signInError) {
-        //         console.error(signInError);
-        //         setFormError("Failed to establish session.");
-        //         return;
-        //     }
-
-        //     const { data: userData } = await supabase.auth.getUser();
-        //     const user = userData?.user;
-
-        //     if (!user) {
-        //         setFormError("User session not found.");
-        //         return;
-        //     }
-
-        //     const { error: profileError } = await supabase
-        //         .from('profiles')
-        //         .insert({
-        //             id: user.id,
-        //             email: email.trim(),
-        //             category: 'University'
-        //         });
-
-        //     if (profileError) {
-        //         console.error(profileError);
-        //         setFormError("Failed to create profile.");
-        //         return;
-        //     }
-
-        //     const { data: uidData, error: uidError } = await supabase
-        //         .from('profiles')
-        //         .select('university_id')
-        //         .eq('id', user.id)
-        //         .maybeSingle();
-
-        //     if (uidError || !uidData?.university_id) {
-        //         console.error(uidError);
-        //         setFormError("Failed to fetch university ID.");
-        //         return;
-        //     }
-
-        //     const { error: universityError } = await supabase
-        //         .from('Universities')
-        //         .insert({
-        //             university_id: uidData.university_id,
-        //             name: event.target.name.value.trim(),
-        //             location: event.target.location.value.trim(),
-        //             subtitle: event.target.subtitle.value.trim()
-        //         });
-
-        //     if (universityError) {
-        //         console.error(universityError);
-        //         setFormError("Failed to create university.");
-        //         return;
-        //     }
-        // }
-        // } else if (category === 'University') {
-        //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        //         email: email.trim(),
-        //         password: password
-        //     });
-        //     if (signUpError) {
-        //         console.error('Error during sign up:', signUpError);
-        //         setFormError('An error occurred during account creation. Please try again.');
-        //         return;
-        //     }
-        //     const { data: profileData, error: profileError } = await supabase.from('profiles').insert({
-        //         id: signUpData.user.id,
-        //         email: email.trim(),
-        //         category: 'University',
-        //         uid: 
-        //     });
-        //     if (profileError) {
-        //         console.error('Error creating profile:', profileError);
-        //         setFormError('An error occurred while creating your profile. Please try again.');
-        //         return;
-        //     }
-        //     const { data: universityData, error: universityError } = await supabase.from('Universities').insert({
-        //         name: event.target.name.value.trim(),
-        //         location: event.target.location.value.trim(),
-        //         subtitle: event.target.subtitle.value.trim(),
-        //     }).select('university_id').single();
-        //     if (universityError) {
-        //         console.error('Error creating university:', universityError);
-        //         setFormError('An error occurred while creating the university profile. Please try again.');
-        //         return;
-        //     }
-        // } else if (category === 'Company') {
-        //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        //         email: email.trim(),
-        //         password: password
-        //     });
-        //     if (signUpError) {
-        //         console.error('Error during sign up:', signUpError);
-        //         setFormError('An error occurred during account creation. Please try again.');
-        //         return;
-        //     }
-        //     const { data: companyData, error: companyError } = await supabase.from('Companies').insert({
-        //         name: event.target.name.value.trim(),
-        //         sector: event.target.sector.value.trim(),
-        //         location: event.target.location.value.trim(),
-        //     }).select('cid').single();
-        //     if (companyError) {
-        //         console.error('Error creating company:', companyError);
-        //         setFormError('An error occurred while creating the company profile. Please try again.');
-        //         return;
-        //     }
-        //     const { data: profileData, error: profileError } = await supabase.from('profiles').insert({
-        //         id: signUpData.user.id,
-        //         email: email.trim(),
-        //         category: 'Company',
-        //     });
-        //     if (profileError) {
-        //         console.error('Error creating profile:', profileError);
-        //         setFormError('An error occurred while creating your profile. Please try again.');
-        //         return;
-        //     }
-        // }
+        else if (category === 'University') {
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: email.trim(),
+                password: password
+            });
+            if (signUpError) {
+                console.error('Error during sign up:', signUpError);
+                setFormError('An error occurred during account creation. Please try again.');
+                return;
+            }
+            const { error: profileError } = await supabase.from('profiles').insert({
+                id: signUpData.user.id,
+                email: email.trim(),
+                category: 'University',
+            });
+            if (profileError) {
+                console.error('Error creating profile:', profileError);
+                setFormError('An error occurred while creating your profile. Please try again.');
+                await supabase.auth.admin.deleteUser(signUpData.user.id);
+                return;
+            }
+            await supabase.auth.signOut();
+            const { data: userData } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password
+            });
+            const id = userData.user.id;
+            const { data: universityData } = await supabase.from('profiles').select('university_id').eq('id', id).single();
+            const { error: universityError } = await supabase.from('Universities').insert({
+                university_id: universityData.university_id,
+                name: event.target.name.value.trim(),
+                location: event.target.location.value.trim(),
+                subtitle: event.target.subtitle.value.trim(),
+            });
+            if (universityError) {
+                console.error('Error creating university record:', universityError);
+                setFormError('An error occurred while creating your university profile. Please try again.');
+                await supabase.auth.admin.deleteUser(signUpData.user.id);
+                return;
+            }
+            supabase.auth.signOut();
+        }
+        else if (category === 'Company') {
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: email.trim(),
+                password: password
+            });
+            if (signUpError) {
+                console.error('Error during sign up:', signUpError);
+                setFormError('An error occurred during account creation. Please try again.');
+                return;
+            }
+            const { error: profileError } = await supabase.from('profiles').insert({
+                id: signUpData.user.id,
+                email: email.trim(),
+                category: 'Company',
+            });
+            if (profileError) {
+                console.error('Error creating profile:', profileError);
+                setFormError('An error occurred while creating your profile. Please try again.');
+                await supabase.auth.admin.deleteUser(signUpData.user.id);
+                return;
+            }
+            await supabase.auth.signOut();
+            const { data: userData } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password
+            });
+            const id = userData.user.id;
+            console.log(id);
+            const { data: companyData } = await supabase.from('profiles').select('cid').eq('id', id).single();
+            const { error: companyError } = await supabase.from('Companies').insert({
+                cid: companyData.cid,
+                name: event.target.name.value.trim(),
+                sector: event.target.sector.value.trim(),
+                location: event.target.location.value.trim(),
+            });
+            if (companyError) {
+                console.error('Error creating company record:', companyError);
+                setFormError('An error occurred while creating your company profile. Please try again.');
+                await supabase.auth.admin.deleteUser(signUpData.user.id);
+                return;
+            }
+            supabase.auth.signOut();
+        }
 
         setFormError('');
         setSubmitted(true);
