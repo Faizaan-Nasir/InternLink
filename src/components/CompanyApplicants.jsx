@@ -16,7 +16,7 @@ export default function CompanyApplicants({ supabase }) {
       } else {
         for (const job of data) {
           for (const app of job.Applications) {
-            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
+            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,university_id,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
             const { data: acceptedResponse, error: responseError } = await supabase.from('Responses').select('decision').eq('student_id', app.student_id).eq('internship_id', job.id).single();
             if (responseError) {
               console.error(`Error fetching response for applicant ${app.student_id}:`, responseError);
@@ -113,14 +113,16 @@ export default function CompanyApplicants({ supabase }) {
     const dataToBeInserted = {
       student_id: selectedApplicant.id,
       internship_id: selectedJob.id,
+      university_id: selectedApplicant.university_id,
       decision
     };
 
-    const { error } = await supabase.from('Responses').insert(dataToBeInserted);
+    const { data, error } = await supabase.from('Responses').insert(dataToBeInserted);
 
     if (error) {
       console.error(`Error updating applicant status to ${decision}:`, error);
     } else {
+      console.log(`Successfully updated applicant status to ${decision}:`, data);
       const applicationKey = getApplicationKey(selectedJob.id, selectedApplicant.id);
       setDecisionByApplication((previousDecisions) => ({
         ...previousDecisions,

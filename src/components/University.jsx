@@ -39,7 +39,6 @@ export default function University({ supabase }) {
           .from("Applications")
           .select("*")
           .in("student_id", studentIds);
-        console.log("Applications data:", applicationsData);
         if (appError) throw appError;
 
         const internshipIds = (applicationsData || []).map(a => a.internship_id);
@@ -53,17 +52,30 @@ export default function University({ supabase }) {
 
         const { data: responsesData, error: responseError } = await dbClient
           .from("Responses")
-          .select("id, decision")
+          .select("internship_id, decision")
           .in("student_id", studentIds);
 
         if (responseError) throw responseError;
+
+        const { data: skillsData, error: skillsError } = await dbClient
+          .from("Student_Skills")
+          .select("sid, Skills(name)");
+
+        if (skillsError) throw skillsError;
+        const skillsMap = new Map();
+        (skillsData || []).forEach(s => {
+          if (!skillsMap.has(s.sid)) {
+            skillsMap.set(s.sid, []);
+          }
+          skillsMap.get(s.sid).push(s.Skills.name);
+        });
 
         const internshipMap = new Map(
           (internshipsData || []).map(i => [i.id, i])
         );
 
         const responseMap = new Map(
-          (responsesData || []).map(r => [r.id, r])
+          (responsesData || []).map(r => [r.internship_id, r])
         );
 
         const applicationsByStudent = new Map();
@@ -90,11 +102,12 @@ export default function University({ supabase }) {
             university: UNIVERSITY_NAME,
             resumeUploaded: Boolean(student.resumeUploaded),
             resumeName: student.resumeName || "Not uploaded",
-            skills: Array.isArray(student.skills) ? student.skills : [],
+            skills: skillsMap.get(student.rno) || [],
 
             applications: studentApps.map((app, appIndex) => {
               const internship = internshipMap.get(app.internship_id);
-              const response = responseMap.get(app.id);
+              const response = responseMap.get(app.internship_id)?.decision ? { decision: responseMap.get(app.internship_id).decision }
+                : null;
 
               return {
                 id: app.id || `app-${student.rno}-${appIndex + 1}`,
@@ -392,6 +405,23 @@ export default function University({ supabase }) {
       setStudents(prev => [newStudent, ...prev]);
     }
 
+    const skillsArray = Array.isArray(studentData.skills) ? studentData.skills : [];
+    const existingSkills = await supabase.from('Skills').select('skid,name');
+    for (const skillName of skillsArray) {
+      if (skillName && !existingSkills.data.some(s => s.name === skillName)) {
+        const { data: newSkill, error: newSkillError } = await supabase.from('Skills').insert({ name: skillName }).select().single();
+        newSkillError && console.error('Error inserting new skill:', newSkillError);
+        if (newSkill) {
+          const { error: studentSkillError } = await supabase.from('Student_Skills').insert({ sid: studentData.rno, skid: newSkill.skid, university_id: universityInfo.id });
+          studentSkillError && console.error('Error linking skill to student:', studentSkillError);
+        }
+      }
+      else {
+        const { error: studentSkillError } = await supabase.from('Student_Skills').upsert({ sid: studentData.rno, skid: existingSkills.data.find(s => s.name === skillName)?.skid, university_id: universityInfo.id });
+        studentSkillError && console.error('Error linking skill to student:', studentSkillError);
+      }
+    }
+
     closeStudentModal();
   }
 
@@ -492,8 +522,8 @@ function getActiveTabFromPath(pathname) {
 
 function normalizeApplicationStatus(status) {
   const value = String(status || "").toLowerCase();
-  if (value === "selected") return "Selected";
-  if (value === "shortlisted") return "Shortlisted";
+  if (value === "accepted") return "Accepted";
+  if (value === "waitlist") return "Waitlist";
   if (value === "rejected") return "Rejected";
   return "Applied";
 }

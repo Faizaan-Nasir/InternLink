@@ -77,7 +77,7 @@ export default function StudentFormModal({
         : "Not uploaded",
       skills: form.skills
         .split(",")
-        .map((skill) => skill.trim())
+        .map((skill) => !(initialData && initialData.skills.includes(skill.trim())) ? skill.trim() : null)
         .filter(Boolean),
     });
   }

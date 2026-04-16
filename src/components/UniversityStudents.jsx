@@ -10,7 +10,6 @@ export default function UniversityStudents({
   const [search, setSearch] = useState("");
   const [applicationFilter, setApplicationFilter] = useState("All");
   const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id ?? null);
-
   const filteredStudents = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -102,9 +101,8 @@ export default function UniversityStudents({
               <button
                 key={student.id}
                 type="button"
-                className={`panel-row applicants-row ${
-                  selectedStudent?.id === student.id ? "panel-row-selected" : ""
-                }`}
+                className={`panel-row applicants-row ${selectedStudent?.id === student.id ? "panel-row-selected" : ""
+                  }`}
                 onClick={() => setSelectedStudentId(student.id)}
               >
                 <span className="applicants-row-name">{student.name}</span>
@@ -222,8 +220,8 @@ export default function UniversityStudents({
             >
               <option>All</option>
               <option>Applied</option>
-              <option>Shortlisted</option>
-              <option>Selected</option>
+              <option>Accepted</option>
+              <option>Waitlist</option>
               <option>Rejected</option>
             </select>
           </div>
@@ -260,8 +258,8 @@ export default function UniversityStudents({
 function getStatusClass(status) {
   const normalized = status.toLowerCase();
 
-  if (normalized === "selected") return "job-status-accepted";
+  if (normalized === "accepted") return "job-status-accepted";
   if (normalized === "rejected") return "job-status-rejected";
-  if (normalized === "shortlisted") return "job-status-waitlist";
+  if (normalized === "waitlist") return "job-status-waitlist";
   return "job-status-waitlist";
 }
