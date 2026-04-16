@@ -1,16 +1,43 @@
 import { useLocation } from 'react-router-dom';
 import Logo from '../assets/Logo.png';
 import CompanyApplicants from './CompanyApplicants';
+import CompanyInfo from './CompanyInfo';
 import CreateInternship from './CreateInternship';
 import Navbar from './Navbar';
+import { useState, useEffect } from 'react';
 
 export default function Company({ supabase }) {
   const location = useLocation();
   const isApplicantsRoute = location.pathname.toLowerCase().startsWith('/applicants');
+  const isInfoRoute = location.pathname.toLowerCase().startsWith('/company/info');
+  const [companyData, setCompanyData] = useState({
+    name: 'Loading...',
+    sector: 'Loading...',
+    location: 'Loading...',
+  });
+
+  useEffect(() => {
+    async function fetchCompanyData() {
+      const { data, error } = await supabase
+        .from('Companies')
+        .select('*')
+        .single();
+      if (error) {
+        console.error('Error fetching company data:', error);
+      }
+      setCompanyData(data);
+    };
+    const loadCompanyData = async () => {
+      await fetchCompanyData();
+    };
+
+    loadCompanyData();
+  }, [supabase]);
 
   const companyLinks = [
     { to: '/CreateJob', label: 'Create Job' },
     { to: '/Applicants', label: 'Applicants' },
+    { to: '/company/info', label: 'Information' },
   ];
 
   return (
@@ -31,7 +58,7 @@ export default function Company({ supabase }) {
         onClick={() => supabase.auth.signOut()}
       />
 
-      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} /> : <CreateInternship supabase={supabase} />}
+      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} /> : isInfoRoute ? <CompanyInfo companyData={companyData} /> : <CreateInternship supabase={supabase} />}
     </div>
   );
 }

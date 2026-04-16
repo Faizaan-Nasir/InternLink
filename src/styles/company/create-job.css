@@ -6,6 +6,7 @@
   bottom: 0;
   box-sizing: border-box;
   overflow: hidden;
+  color: var(--company-text-primary);
 }
 
 .company-create-scroll {
@@ -59,7 +60,7 @@
   margin: 0;
   font-size: 1.18rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--company-text-primary);
   text-decoration: underline;
   text-underline-offset: 0.24rem;
   text-decoration-thickness: 0.08rem;
@@ -86,7 +87,7 @@
 .company-form-group label {
   font-size: 0.84rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.87);
+  color: var(--company-text-primary);
 }
 
 .company-form-group input,
@@ -96,7 +97,7 @@
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background-color: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  color: var(--company-text-primary);
   font-family: inherit;
   font-size: 0.9rem;
   padding: 0 0.78rem;
@@ -117,7 +118,7 @@
 
 .company-form-group input::placeholder,
 .company-form-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.54);
+  color: var(--company-text-muted);
 }
 
 .company-form-group input[type='number'] {
@@ -153,13 +154,13 @@
 .company-btn-secondary {
   border: 1px solid rgba(255, 255, 255, 0.18);
   background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: var(--company-text-primary);
 }
 
 .company-btn-primary {
   border: none;
   background-color: var(--theme-blue);
-  color: #ffffff;
+  color: var(--company-text-primary);
 }
 
 .company-post-overlay {
@@ -181,7 +182,7 @@
   background-color: var(--backdrop);
   padding: 1rem;
   box-sizing: border-box;
-  color: #ffffff;
+  color: var(--company-text-primary);
   box-shadow: 0 14px 36px rgba(2, 6, 23, 0.48);
 }
 
@@ -193,14 +194,14 @@
 
 .company-post-message {
   margin: 0;
-  color: rgba(255, 255, 255, 0.84);
+  color: var(--company-text-primary);
   font-size: 0.84rem;
   line-height: 1.45;
 }
 
 .company-post-note {
   margin: 0.55rem 0 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--company-text-muted);
   font-size: 0.78rem;
   line-height: 1.45;
 }
@@ -221,7 +222,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0 1rem;
-  color: #ffffff;
+  color: var(--company-text-primary);
   cursor: pointer;
 }
 

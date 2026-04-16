@@ -250,7 +250,7 @@ export default function University({ supabase }) {
     // Placement Rate: percentage of students with at least one "Selected" application
     const studentsWithPlacement = new Set(
       allApplications
-        .filter(app => app.status === "Selected")
+        .filter(app => app.status === "Accepted")
         .map(app => {
           const student = students.find(s =>
             s.applications && s.applications.includes(app)
