@@ -182,7 +182,7 @@
   background-color: var(--backdrop);
   padding: 1rem;
   box-sizing: border-box;
-  color: var(--company-text-primary);
+  color: var(--company-text-primary, #ffffff);
   box-shadow: 0 14px 36px rgba(2, 6, 23, 0.48);
 }
 
@@ -194,14 +194,14 @@
 
 .company-post-message {
   margin: 0;
-  color: var(--company-text-primary);
+  color: var(--company-text-primary, #ffffff);
   font-size: 0.84rem;
   line-height: 1.45;
 }
 
 .company-post-note {
   margin: 0.55rem 0 0;
-  color: var(--company-text-muted);
+  color: var(--company-text-muted, rgba(255, 255, 255, 0.72));
   font-size: 0.78rem;
   line-height: 1.45;
 }
@@ -222,7 +222,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0 1rem;
-  color: var(--company-text-primary);
+  color: var(--company-text-primary, #ffffff);
   cursor: pointer;
 }
 

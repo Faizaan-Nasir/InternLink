@@ -8,7 +8,9 @@ export default function BlacklistList({ title, items, buttonLabel, onAdd }) {
         <div className='company-info-blacklist-column'>
             <div className='company-info-blacklist-head'>
                 <h3 className='company-info-blacklist-title'>{title}</h3>
-                <button type='button' className='company-info-add-btn' onClick={onAdd}>{buttonLabel}</button>
+                {buttonLabel && onAdd ? (
+                    <button type='button' className='company-info-add-btn' onClick={onAdd}>{buttonLabel}</button>
+                ) : null}
             </div>
 
             <div className='company-info-tabs-scroll'>

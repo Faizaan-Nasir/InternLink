@@ -64,6 +64,17 @@ async function handleApply(supabase, jobId) {
     return { status: 'error' };
   }
 
+  const universityId = await supabase
+    .from('Students')
+    .select('university_id')
+    .eq('rno', rno)
+    .single()
+    .then(({ data }) => data?.university_id);
+
+  if (!universityId) {
+    return { status: 'error' };
+  }
+
   const response = await supabase.from('Applications').select('*').eq('student_id', rno).eq('internship_id', jobId).single();
   if (response.data) {
     console.warn('Already applied for this job');
@@ -73,6 +84,7 @@ async function handleApply(supabase, jobId) {
   const { data, error } = await supabase.from('Applications').insert({
     student_id: rno,
     internship_id: jobId,
+    university_id: universityId
   });
 
   if (error) {

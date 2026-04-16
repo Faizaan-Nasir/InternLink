@@ -280,7 +280,7 @@ export default function University({ supabase }) {
     });
     const branchApplications = Object.entries(branchMap)
       .map(([branch, count]) => ({
-        label: branch.split(" and ")[0] || branch, // Shorten long branch names
+        label: branch,
         value: count,
       }))
       .sort((a, b) => b.value - a.value);
@@ -389,7 +389,6 @@ export default function University({ supabase }) {
         applications: [],
         ...studentData,
       };
-      console.log(universityInfo.id);
       const { error: insertError } = await supabase.from("Students").insert({
         rno: newStudent.rno,
         name: newStudent.name,

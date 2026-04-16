@@ -207,6 +207,38 @@
   cursor: pointer;
 }
 
+.details-btn-blacklist-university {
+  width: 100%;
+  min-height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.1);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 1rem;
+  color: var(--company-text-primary);
+  cursor: pointer;
+}
+
+.details-btn-secondary:disabled,
+.details-btn-accept:disabled,
+.details-btn-waitlist:disabled,
+.details-btn-reject:disabled,
+.details-btn-blacklist-university:disabled {
+  opacity: 0.52;
+  filter: saturate(0.6);
+  cursor: not-allowed;
+}
+
+.details-btn-secondary:disabled:hover,
+.details-btn-accept:disabled:hover,
+.details-btn-waitlist:disabled:hover,
+.details-btn-reject:disabled:hover,
+.details-btn-blacklist-university:disabled:hover {
+  cursor: not-allowed;
+}
+
 .details-btn-secondary {
   width: 100%;
   background-color: rgba(255, 255, 255, 0.1);
@@ -255,4 +287,69 @@
 
 .details-btn-decision-rejected {
   background-color: #b91c1c;
+}
+
+.company-applicants-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: rgba(3, 7, 18, 0.72);
+}
+
+.company-applicants-modal-card {
+  width: min(24rem, 92vw);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background-color: var(--backdrop);
+  padding: 1rem;
+  box-sizing: border-box;
+  color: var(--company-text-primary, #ffffff);
+  box-shadow: 0 14px 36px rgba(2, 6, 23, 0.48);
+}
+
+.company-applicants-modal-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.06rem;
+  line-height: 1.2;
+}
+
+.company-applicants-modal-message {
+  margin: 0;
+  color: var(--company-text-primary, #ffffff);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.company-applicants-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.company-applicants-modal-cancel,
+.company-applicants-modal-confirm {
+  min-height: 2rem;
+  border-radius: 999px;
+  border: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 1rem;
+  color: var(--company-text-primary, #ffffff);
+  cursor: pointer;
+}
+
+.company-applicants-modal-cancel {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.company-applicants-modal-confirm {
+  background-color: var(--theme-blue);
 }

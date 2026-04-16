@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BlacklistSection from './BlacklistSection';
 import CompanyOverview from './CompanyOverview';
 
-export default function CompanyInfo({ companyData }) {
-    console.log('Received company data:', companyData);
+export default function CompanyInfo({ companyData, blacklistedUniversities }) {
     const companyInfo = {
         companyName: companyData?.name || 'Google',
         domain: companyData?.sector || 'Software Development',
@@ -25,26 +24,12 @@ export default function CompanyInfo({ companyData }) {
         'Arjun Sen',
     ]);
 
-    const [universities, setUniversities] = useState([
-        'IIT Delhi',
-        'VIT Vellore',
-        'NIT Trichy',
-        'BITS Pilani',
-        'IIT Bombay',
-        'IIT Madras',
-        'IIIT Hyderabad',
-        'SRM University',
-        'Delhi Technological University',
-        'Manipal Institute of Technology',
-        'PES University',
-        'Anna University',
-    ]);
-
+    const [universities, setUniversities] = useState([]);
     const [activeModal, setActiveModal] = useState(null);
     const [inputValue, setInputValue] = useState('');
 
-    const openModal = (type) => {
-        setActiveModal(type);
+    const openModal = () => {
+        setActiveModal('student');
         setInputValue('');
     };
 
@@ -63,13 +48,12 @@ export default function CompanyInfo({ companyData }) {
             setStudents((previous) => [value, ...previous]);
         }
 
-        if (activeModal === 'university') {
-            setUniversities((previous) => [value, ...previous]);
-        }
-
         closeModal();
     };
 
+    useEffect(() => {
+        setUniversities(blacklistedUniversities);
+    }, [blacklistedUniversities]);
     return (
         <section className='company-info-page'>
             <div className='company-info-scroll'>
@@ -82,8 +66,7 @@ export default function CompanyInfo({ companyData }) {
                 <BlacklistSection
                     students={students}
                     universities={universities}
-                    onAddStudent={() => openModal('student')}
-                    onAddUniversity={() => openModal('university')}
+                    onAddStudent={openModal}
                 />
             </div>
 
@@ -91,14 +74,14 @@ export default function CompanyInfo({ companyData }) {
                 <div className='company-info-modal-overlay' role='dialog' aria-modal='true' aria-labelledby='company-info-modal-title'>
                     <div className='company-info-modal'>
                         <h3 className='company-info-modal-title' id='company-info-modal-title'>
-                            {activeModal === 'student' ? 'Add Student' : 'Add University'}
+                            Add Student
                         </h3>
                         <input
                             className='company-info-modal-input'
                             type='text'
                             value={inputValue}
                             onChange={(event) => setInputValue(event.target.value)}
-                            placeholder={activeModal === 'student' ? 'Enter student name' : 'Enter university name'}
+                            placeholder='Enter student name'
                         />
                         <div className='company-info-modal-actions'>
                             <button type='button' className='company-info-modal-cancel' onClick={closeModal}>Cancel</button>

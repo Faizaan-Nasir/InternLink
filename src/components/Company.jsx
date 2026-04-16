@@ -15,6 +15,7 @@ export default function Company({ supabase }) {
     sector: 'Loading...',
     location: 'Loading...',
   });
+  const [blacklistedUniversities, setBlacklistedUniversities] = useState([]);
 
   useEffect(() => {
     async function fetchCompanyData() {
@@ -27,11 +28,18 @@ export default function Company({ supabase }) {
       }
       setCompanyData(data);
     };
-    const loadCompanyData = async () => {
-      await fetchCompanyData();
-    };
-
-    loadCompanyData();
+    async function fetchBlacklistedUniversities() {
+      const { data, error } = await supabase
+        .from('university_blacklist')
+        .select('Universities(name)');
+      if (error) {
+        console.error('Error fetching blacklisted universities:', error);
+      } else {
+        setBlacklistedUniversities(data.map((row) => row.Universities.name));
+      }
+    }
+    fetchBlacklistedUniversities();
+    fetchCompanyData();
   }, [supabase]);
 
   const companyLinks = [
@@ -57,8 +65,7 @@ export default function Company({ supabase }) {
         className='logo'
         onClick={() => supabase.auth.signOut()}
       />
-
-      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} /> : isInfoRoute ? <CompanyInfo companyData={companyData} /> : <CreateInternship supabase={supabase} />}
+      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} blacklistedUniversities={blacklistedUniversities} /> : isInfoRoute ? <CompanyInfo companyData={companyData} blacklistedUniversities={blacklistedUniversities} /> : <CreateInternship supabase={supabase} />}
     </div>
   );
 }
