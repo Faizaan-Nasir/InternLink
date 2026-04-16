@@ -116,12 +116,13 @@ export default function Register({ supabase }) {
                 sid: event.target.rollNumber.value.trim()
             });
             if (profileError) {
+                await supabase.auth.signOut();
+                navigate('/register');
                 console.error('Error creating profile:', profileError);
                 setFormError('Your university has not yet registered you in the system. Please contact your university administration to get registered before creating an account.');
-                await supabase.auth.admin.deleteUser(signUpData.user.id);
                 return;
             }
-            supabase.auth.signOut();
+            await supabase.auth.signOut();
         }
         else if (category === 'University') {
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -140,8 +141,9 @@ export default function Register({ supabase }) {
             });
             if (profileError) {
                 console.error('Error creating profile:', profileError);
+                navigate('/register');
+                await supabase.auth.signOut();
                 setFormError('An error occurred while creating your profile. Please try again.');
-                await supabase.auth.admin.deleteUser(signUpData.user.id);
                 return;
             }
             await supabase.auth.signOut();
@@ -159,11 +161,12 @@ export default function Register({ supabase }) {
             });
             if (universityError) {
                 console.error('Error creating university record:', universityError);
+                await supabase.auth.signOut();
+                navigate('/register');
                 setFormError('An error occurred while creating your university profile. Please try again.');
-                await supabase.auth.admin.deleteUser(signUpData.user.id);
                 return;
             }
-            supabase.auth.signOut();
+            await supabase.auth.signOut();
         }
         else if (category === 'Company') {
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -171,6 +174,7 @@ export default function Register({ supabase }) {
                 password: password
             });
             if (signUpError) {
+                await supabase.auth.signOut();
                 console.error('Error during sign up:', signUpError);
                 setFormError('An error occurred during account creation. Please try again.');
                 return;
@@ -182,8 +186,9 @@ export default function Register({ supabase }) {
             });
             if (profileError) {
                 console.error('Error creating profile:', profileError);
+                await supabase.auth.signOut();
+                navigate('/register');
                 setFormError('An error occurred while creating your profile. Please try again.');
-                await supabase.auth.admin.deleteUser(signUpData.user.id);
                 return;
             }
             await supabase.auth.signOut();
@@ -202,11 +207,12 @@ export default function Register({ supabase }) {
             });
             if (companyError) {
                 console.error('Error creating company record:', companyError);
+                navigate('/register');
                 setFormError('An error occurred while creating your company profile. Please try again.');
-                await supabase.auth.admin.deleteUser(signUpData.user.id);
+                await supabase.auth.signOut();
                 return;
             }
-            supabase.auth.signOut();
+            await supabase.auth.signOut();
         }
 
         setFormError('');

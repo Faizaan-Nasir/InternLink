@@ -16,6 +16,7 @@ function AppShell() {
   const [authReady, setAuthReady] = useState(false);
   const [category, setCategory] = useState(null);
   const [roleReady, setRoleReady] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -79,7 +80,13 @@ function AppShell() {
       const { data, error } = await supabase.from('profiles')
         .select('category')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
+      if (!data || data.category !== 'Student' && data.category !== 'Company' && data.category !== 'University') {
+        setErrorMessage('Not a student or company or university');
+        await supabase.auth.signOut();
+        return;
+      }
 
       if (!active) {
         return;
@@ -91,13 +98,7 @@ function AppShell() {
         return;
       }
 
-      setCategory(data.category);
-
-      if (data.category !== 'Student' && data.category !== 'Company' && data.category !== 'University') {
-        console.error('Unauthorized access: User is not a student or company or university');
-        await supabase.auth.signOut();
-        return;
-      }
+      setCategory(data?.category);
 
       setRoleReady(true);
     }
@@ -141,9 +142,9 @@ function AppShell() {
       ) : (
         <div className='main-content login-shell'>
           <Routes>
-            <Route path='/login' element={<Login supabase={supabase} />} />
+            <Route path='/login' element={<Login supabase={supabase} errorMessage={errorMessage} />} />
             <Route path='/register' element={<Register supabase={supabase} />} />
-            <Route path='*' element={<Login supabase={supabase} />} />
+            <Route path='*' element={<Login supabase={supabase} errorMessage={errorMessage} />} />
           </Routes>
         </div>
       )}

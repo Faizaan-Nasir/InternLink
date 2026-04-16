@@ -21,7 +21,7 @@ async function tryLogin(supabase, email, password) {
   }
 }
 
-export default function Login({ supabase }) {
+export default function Login({ supabase, errorMessage }) {
   const navigate = useNavigate();
   const [loginFailed, setLoginFailed] = useState(false);
 
@@ -72,6 +72,7 @@ export default function Login({ supabase }) {
           </div>
 
           {loginFailed ? <p className='login-failure'>Email and password do not match.</p> : null}
+          {errorMessage ? <p className='login-failure'>{errorMessage}</p> : null}
         </form>
       </div>
     </section>
