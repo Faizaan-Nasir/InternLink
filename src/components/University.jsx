@@ -426,6 +426,9 @@ export default function University({ supabase }) {
   }
 
   function handleImportStudents(importedRows) {
+    for (const row of importedRows) {
+      handleSaveStudent(row);
+    }
     setStudents(prev => {
       const map = new Map(prev.map(s => [Number(s.rno), s]));
 

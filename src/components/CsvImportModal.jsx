@@ -60,7 +60,7 @@ export default function CsvImportModal({ isOpen, onClose, onImport }) {
       <div className="company-post-card university-modal-card">
         <h3 className="profile-modal-title">Import Students from CSV</h3>
         <p className="profile-modal-subtitle">
-          Use headers: name, rno, branch, year, cgpa, email, phone, resumeUploaded, resumeName, skills
+          Use headers: name, rno, branch, year, cgpa, email, phone, skills
         </p>
 
         <div className="university-csv-upload-wrap">
@@ -200,9 +200,7 @@ function normalizeCsvRows(rows) {
       cgpa: Number(row.cgpa),
       email: row.email || "",
       phone: row.phone || "",
-      university: row.university || "Manipal Bangalore",
-      resumeUploaded: String(row.resumeuploaded || "").toLowerCase() === "true",
-      resumeName: row.resumename || "Not uploaded",
+      university: row.university || "",
       skills: (row.skills || "")
         .split(/[;,]/)
         .map((skill) => skill.trim())
