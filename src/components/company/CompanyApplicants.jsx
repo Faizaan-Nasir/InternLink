@@ -1,5 +1,6 @@
-import { useActionState, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import SearchBar from '../SearchBar';
+import { GenerateSummary } from '../../../utils/summarizer';
 
 export default function CompanyApplicants({ supabase, blacklistedUniversities, blacklistedStudents, onBlacklistStudent, onBlacklistUniversity }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -8,8 +9,9 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
   const [decisionByApplication, setDecisionByApplication] = useState({});
   const [blacklistModalType, setBlacklistModalType] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [aiSummariesByApplicant, setAISummariesByApplicant] = useState({});
 
-  useState(() => {
+  useEffect(() => {
     const getCompanyJobs = async () => {
       const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(cid,name)');
       if (error) {
@@ -41,6 +43,7 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
               app.skills = studentData.Student_Skills.map((skill) => skill.Skills.name);
               app.university_id = studentData.university_id;
               app.cid = job.Companies.cid;
+              app.companyName = job.Companies.name;
             }
           }
         }
@@ -48,6 +51,7 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
       const temporaryJobs = data.map((job) => ({
         id: job.id,
         title: job.role,
+        companyName: job.companyName,
         applicantCount: job.Applications.length,
         applicants: job.Applications.map((app) => ({
           id: app.student_id,
@@ -61,10 +65,27 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
           email: app.email,
           university: app.university,
           university_id: app.university_id,
-          cid: app.cid
+          cid: app.cid,
         }))
       }))
       setJobs(temporaryJobs);
+      for (const job of temporaryJobs) {
+        for (const applicant of job.applicants) {
+          const aiSummary = await GenerateSummary({
+            branch: applicant.branch,
+            year: applicant.year,
+            university: applicant.university,
+            cgpa: applicant.cgpa,
+            skills: applicant.skills,
+            company: job.companyName,
+            role: job.role
+          });
+          setAISummariesByApplicant((previousSummaries) => ({
+            ...previousSummaries,
+            [`${applicant.id}:${job.id}`]: aiSummary
+          }));
+        }
+      }
     };
     getCompanyJobs();
   }, [supabase]);
@@ -113,12 +134,10 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
 
   const getApplicationKey = (jobId, applicantId) => `${jobId}:${applicantId}`;
 
-  const selectedDecision = useMemo(() => {
-    if (!selectedJob || !selectedApplicant) {
-      return null;
-    }
-    return decisionByApplication[getApplicationKey(selectedJob.id, selectedApplicant.id)] ?? null;
-  }, [decisionByApplication, selectedApplicant, selectedJob]);
+  const selectedDecision =
+    selectedJob && selectedApplicant
+      ? decisionByApplication[getApplicationKey(selectedJob.id, selectedApplicant.id)] ?? null
+      : null;
 
   const handleDecision = async (decision) => {
     if (!selectedApplicant || !selectedJob) {
@@ -256,6 +275,13 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
               <div className='details-scroll'>
                 <h3 className='details-name'>{selectedApplicant.name}</h3>
                 <p className='details-subtext'>{selectedApplicant.branch} • Year {selectedApplicant.year}</p>
+
+                <div className='details-ai-insights'>
+                  <h4 className='details-ai-insights-title'>AI Insights</h4>
+                  <p className='details-ai-insights-copy'>
+                    {aiSummariesByApplicant[`${selectedApplicant.id}:${selectedJob.id}`] || 'Generating AI insights...'}
+                  </p>
+                </div>
 
                 <div className='details-row'>
                   <span className='details-label'>University</span>

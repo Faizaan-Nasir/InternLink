@@ -151,6 +151,29 @@
   line-height: 1.35;
 }
 
+.details-ai-insights {
+  margin: 0 0 0.7rem;
+  padding: 0.72rem 0.78rem;
+  border-radius: 10px;
+  border: 1px solid rgba(59, 130, 246, 0.34);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.details-ai-insights-title {
+  margin: 0 0 0.4rem;
+  text-align: center;
+  font-size: 0.86rem;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.details-ai-insights-copy {
+  margin: 0;
+  color: var(--company-text-primary);
+  font-size: 0.79rem;
+  line-height: 1.5;
+}
+
 .details-row {
   display: flex;
   justify-content: space-between;

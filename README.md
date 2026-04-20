@@ -9,6 +9,14 @@ Companies can publish opportunities, review applicants, make hiring decisions (a
 
 Universities get a centralized view of student internship activity, including which opportunities students from their institution have applied to and how engagement is progressing.
 
+## Features
+
+- Student portal to discover internships, apply, and track application decisions.
+- Company workflow to post opportunities, review applicants, and mark outcomes (accept, waitlist, reject).
+- Blacklist controls for companies at both student and university levels.
+- University dashboard for tracking student internship engagement and outcomes.
+- AI-generated student profile summary for company applicant review.
+
 ## Techstack used
 
 - React for building reusable UI components and dashboard screens.
@@ -16,6 +24,7 @@ Universities get a centralized view of student internship activity, including wh
 - JavaScript (ES6+) for application logic and async workflows.
 - Supabase for backend services including authentication, API access, and database integration.
 - PostgreSQL (via Supabase) for relational data storage and schema-driven design.
+- Google AI Studio (Gemini API) for AI-powered student profile summarization.
 
 ## What I learnt
 
@@ -24,6 +33,13 @@ Universities get a centralized view of student internship activity, including wh
 - My understanding of `useEffect` is that it is used to handle side effects like fetching data after a component renders, so that asynchronous operations can run at the right time without causing repeated API calls on every render.
 - I learned that `useMemo` helps avoid unnecessary recalculations by memoizing derived values when dependencies do not change.
 - Through Supabase, I learned practical concepts in PostgreSQL, database design, authentication flow, API calling patterns, and Row Level Security (RLS) policies.
+
+### Prompt-engineering notes for LLM features
+
+- Good prompts should clearly define the role, objective, and boundaries so the model stays focused on relevant data.
+- Supplying structured context (for example profile fields and job role) improves response quality and reduces hallucinations.
+- Explicit output instructions (length, tone, and plain-text format) keep results consistent for UI display.
+- Prompt design should include safety checks and fallback behavior for empty, vague, or low-confidence model outputs.
 
 ## Database schema
 
@@ -205,7 +221,6 @@ npm run preview
 - Resume PDF ingestion and structured extraction.
 - Richer internship/job detail pages for better role clarity.
 - AI-generated internship summary for students (LLM).
-- AI-generated student profile summary for recruiters (LLM).
 - AI-based selection likelihood insights for students.
 
 Planned AI direction: use LLM + RAG across intelligence features, with RAG-first design for resume understanding and retrieval.
