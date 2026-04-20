@@ -1,9 +1,9 @@
 import { useLocation } from 'react-router-dom';
-import Logo from '../assets/Logo.png';
+import Logo from '../../assets/Logo.png';
 import CompanyApplicants from './CompanyApplicants';
 import CompanyInfo from './CompanyInfo';
 import CreateInternship from './CreateInternship';
-import Navbar from './Navbar';
+import Navbar from '../Navbar';
 import { useState, useEffect } from 'react';
 
 export default function Company({ supabase }) {

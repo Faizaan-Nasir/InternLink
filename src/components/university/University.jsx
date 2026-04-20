@@ -1,14 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Logo from "../assets/Logo.png";
-import Navbar from "./Navbar";
+import Logo from "../../assets/Logo.png";
+import Navbar from "../Navbar";
 import UniversityOverview from "./UniversityOverview";
 import UniversityStudents from "./UniversityStudents";
 import UniversityCompanies from "./UniversityCompanies";
 import UniversityAnalytics from "./UniversityAnalytics";
 import StudentFormModal from "./StudentFormModal";
 import CsvImportModal from "./CsvImportModal";
-import { supabase as supabaseClient } from "../../utils/supabase";
+import { supabase as supabaseClient } from "../../../utils/supabase";
 
 export default function University({ supabase }) {
   const location = useLocation();

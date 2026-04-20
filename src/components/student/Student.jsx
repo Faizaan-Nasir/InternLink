@@ -1,11 +1,11 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
-import Logo from '../assets/Logo.png';
+import Logo from '../../assets/Logo.png';
 import Applied from './Applied';
-import Navbar from './Navbar';
+import Navbar from '../Navbar';
 import Opportunities from './Opportunities';
 import Profile from './Profile';
 import Responses from './Responses';
-import University from './University';
+import University from '../university/University';
 
 export default function Student({ supabase }) {
   const location = useLocation();

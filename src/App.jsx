@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
-import Company from './components/Company';
+import Company from './components/company/Company';
 import Login from './components/Login';
 import Register from './components/Register';
-import Student from './components/Student';
-import University from './components/University';
+import Student from './components/student/Student';
+import University from './components/university/University';
 import ViewError from './components/ViewError';
 import { supabase } from '../utils/supabase';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';

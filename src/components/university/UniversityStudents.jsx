@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import SearchBar from "./SearchBar";
+import SearchBar from "../SearchBar";
 
 export default function UniversityStudents({
   students,

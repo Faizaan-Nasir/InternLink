@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import SearchBar from "./SearchBar";
+import SearchBar from "../SearchBar";
 
 export default function UniversityCompanies({ companies }) {
   const [search, setSearch] = useState("");

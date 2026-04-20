@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Job from './Job';
-import SearchBar from './SearchBar';
+import SearchBar from '../SearchBar';
 
 function getStipendValue(stipend) {
     if (typeof stipend === 'number') {

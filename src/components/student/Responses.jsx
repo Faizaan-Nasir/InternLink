@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Job from './Job';
-import SearchBar from './SearchBar';
+import SearchBar from '../SearchBar';
 
 function getStipendValue(stipend) {
   if (typeof stipend === 'number') {

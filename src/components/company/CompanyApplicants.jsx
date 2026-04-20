@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import SearchBar from './SearchBar';
+import { useActionState, useEffect, useMemo, useState } from 'react';
+import SearchBar from '../SearchBar';
 
 export default function CompanyApplicants({ supabase, blacklistedUniversities, blacklistedStudents, onBlacklistStudent, onBlacklistUniversity }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,7 +9,7 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities, b
   const [blacklistModalType, setBlacklistModalType] = useState(null);
   const [jobs, setJobs] = useState([]);
 
-  useEffect(() => {
+  useState(() => {
     const getCompanyJobs = async () => {
       const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(cid,name)');
       if (error) {
