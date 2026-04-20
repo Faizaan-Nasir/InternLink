@@ -1,47 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import SearchBar from './SearchBar';
 
-export default function CompanyApplicants({ supabase, blacklistedUniversities }) {
+export default function CompanyApplicants({ supabase, blacklistedUniversities, blacklistedStudents, onBlacklistStudent, onBlacklistUniversity }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState(null);
-  const [jobs, setJobs] = useState([]);
   const [decisionByApplication, setDecisionByApplication] = useState({});
-  const [isBlacklistModalOpen, setIsBlacklistModalOpen] = useState(false);
-  const [localBlacklistedUniversities, setLocalBlacklistedUniversities] = useState([]);
-
-  const blacklist = useMemo(() => {
-    const source = Array.isArray(blacklistedUniversities) ? blacklistedUniversities : [];
-    const normalizedFromSource = source
-      .map((entry) => {
-        if (typeof entry === 'string') {
-          return entry.trim();
-        }
-
-        if (entry && typeof entry === 'object') {
-          if (typeof entry.name === 'string') {
-            return entry.name.trim();
-          }
-
-          if (typeof entry.Universities === 'string') {
-            return entry.Universities.trim();
-          }
-
-          if (entry.Universities && typeof entry.Universities === 'object' && typeof entry.Universities.name === 'string') {
-            return entry.Universities.name.trim();
-          }
-
-          if (Array.isArray(entry.Universities) && typeof entry.Universities[0]?.name === 'string') {
-            return entry.Universities[0].name.trim();
-          }
-        }
-
-        return '';
-      })
-      .filter(Boolean);
-
-    return Array.from(new Set([...normalizedFromSource, ...localBlacklistedUniversities]));
-  }, [blacklistedUniversities, localBlacklistedUniversities]);
+  const [blacklistModalType, setBlacklistModalType] = useState(null);
+  const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
     const getCompanyJobs = async () => {
@@ -51,8 +17,8 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
       } else {
         for (const job of data) {
           for (const app of job.Applications) {
-            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,university_id,Student_Skills(Skills(name)),email').eq('rno', app.student_id).single();
-            const { data: acceptedResponse, error: responseError } = await supabase.from('Responses').select('decision').eq('student_id', app.student_id).eq('internship_id', job.id).single();
+            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,university_id,Student_Skills(Skills(name)),email').eq('rno', app.student_id).maybeSingle();
+            const { data: acceptedResponse, error: responseError } = await supabase.from('Responses').select('decision').eq('student_id', app.student_id).eq('internship_id', job.id).maybeSingle();
             if (responseError) {
               console.error(`Error fetching response for applicant ${app.student_id}:`, responseError);
             } else {
@@ -101,7 +67,8 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
       setJobs(temporaryJobs);
     };
     getCompanyJobs();
-  }, [supabase, blacklistedUniversities]);
+  }, [supabase]);
+
   const filteredJobs = useMemo(() => {
     const normalizedQuery = searchTerm.trim().toLowerCase();
     if (!normalizedQuery) {
@@ -112,22 +79,31 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
   }, [jobs, searchTerm]);
 
   useEffect(() => {
-    if (!selectedJobId) {
-      return;
-    }
+    async function validateSelectedJob() {
+      if (!selectedJobId) {
+        return;
+      }
 
-    const selectedStillVisible = filteredJobs.some((job) => job.id === selectedJobId);
-    if (!selectedStillVisible) {
-      setSelectedJobId(null);
-      setSelectedApplicantId(null);
+      const selectedStillVisible = filteredJobs.some((job) => job.id === selectedJobId);
+      if (!selectedStillVisible) {
+        await setSelectedJobId(null);
+        setSelectedApplicantId(null);
+      }
     }
+    validateSelectedJob();
   }, [filteredJobs, selectedJobId]);
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedJobId) || null;
   const applicantsForSelectedJob = selectedJob ? selectedJob.applicants : [];
   const selectedApplicant = applicantsForSelectedJob.find((applicant) => applicant.id === selectedApplicantId) || null;
   const selectedUniversityName = (selectedApplicant?.university ?? '').trim();
-  const isUniversityInBlacklist = selectedUniversityName !== '' && blacklist.includes(selectedUniversityName);
+  const selectedStudentName = (selectedApplicant?.name ?? '').trim();
+  const studentBlacklist = useMemo(
+    () => new Set((Array.isArray(blacklistedStudents) ? blacklistedStudents : []).map((name) => name.trim())),
+    [blacklistedStudents]
+  );
+  const isUniversityInBlacklist = selectedUniversityName !== '' && blacklistedUniversities.includes(selectedUniversityName);
+  const isStudentInBlacklist = selectedStudentName !== '' && studentBlacklist.has(selectedStudentName);
 
   const selectJob = (jobId) => {
     setSelectedJobId(jobId);
@@ -181,31 +157,46 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
     await handleDecision('Rejected');
   };
 
-  const openBlacklistModal = () => {
-    if (!selectedApplicant?.university) {
+  const openBlacklistModal = (category) => {
+    if (category == 'university' && !selectedApplicant?.university) {
       return;
     }
-    if (isUniversityInBlacklist) {
+    if (category == 'student' && !selectedApplicant?.name) {
       return;
     }
-    setIsBlacklistModalOpen(true);
+    setBlacklistModalType(category);
   };
 
+
   const closeBlacklistModal = () => {
-    setIsBlacklistModalOpen(false);
+    setBlacklistModalType(null);
   };
 
   const confirmUniversityBlacklist = async () => {
     console.log(`Blacklisting university ${selectedApplicant.university} with ID ${selectedApplicant.university_id} for company ID ${selectedApplicant.cid}`);
-    const { error } = await supabase.from('university_blacklist').insert({ university_id: selectedApplicant.university_id, cid: selectedApplicant.cid });
+    const { error } = await onBlacklistUniversity(selectedApplicant.university_id, selectedApplicant.university);
     if (error) {
       console.error('Error blacklisting university:', error);
-    } else {
-      setLocalBlacklistedUniversities((previous) => (
-        previous.includes(selectedUniversityName) ? previous : [...previous, selectedUniversityName]
-      ));
-      setIsBlacklistModalOpen(false);
     }
+    setBlacklistModalType(null);
+  };
+
+  const confirmStudentBlacklist = async () => {
+    console.log(`Blacklisting student ${selectedStudentName} for company ID ${selectedApplicant.cid}`);
+    const { error } = await onBlacklistStudent(selectedApplicant.id, selectedStudentName);
+    if (error) {
+      console.error('Error blacklisting student:', error);
+    }
+    setBlacklistModalType(null);
+  };
+
+  const confirmBlacklist = async () => {
+    if (blacklistModalType === 'student') {
+      await confirmStudentBlacklist();
+      return;
+    }
+
+    await confirmUniversityBlacklist();
   };
 
   return (
@@ -289,7 +280,7 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
               </div>
 
               <div className='details-actions details-actions-sticky'>
-                <button type='button' className='details-btn-secondary' disabled={isUniversityInBlacklist}>View Resume</button>
+                <button type='button' className='details-btn-secondary' disabled={isUniversityInBlacklist || isStudentInBlacklist}>View Resume</button>
                 <div className='details-actions-inline'>
                   {selectedDecision ? (
                     <button
@@ -301,31 +292,48 @@ export default function CompanyApplicants({ supabase, blacklistedUniversities })
                     </button>
                   ) : (
                     <>
-                      <button type='button' className='details-btn-accept' onClick={handleAccept} disabled={isUniversityInBlacklist}>Accept</button>
-                      <button type='button' className='details-btn-waitlist' onClick={handleWaitlist} disabled={isUniversityInBlacklist}>Waitlist</button>
-                      <button type='button' className='details-btn-reject' onClick={handleReject} disabled={isUniversityInBlacklist}>Reject</button>
+                      <button type='button' className='details-btn-accept' onClick={handleAccept} disabled={isUniversityInBlacklist || isStudentInBlacklist}>Accept</button>
+                      <button type='button' className='details-btn-waitlist' onClick={handleWaitlist} disabled={isUniversityInBlacklist || isStudentInBlacklist}>Waitlist</button>
+                      <button type='button' className='details-btn-reject' onClick={handleReject} disabled={isUniversityInBlacklist || isStudentInBlacklist}>Reject</button>
                     </>
                   )}
                 </div>
-                <button type='button' className='details-btn-blacklist-university' onClick={openBlacklistModal} disabled={isUniversityInBlacklist}>
-                  Add University To Blacklist
-                </button>
+                <div className='details-blacklist-actions'>
+                  <button
+                    type='button'
+                    className='details-btn-blacklist-student'
+                    onClick={() => openBlacklistModal('student')}
+                    disabled={isStudentInBlacklist}
+                  >
+                    Blacklist Student
+                  </button>
+                  <button
+                    type='button'
+                    className='details-btn-blacklist-university'
+                    onClick={() => openBlacklistModal('university')}
+                    disabled={isUniversityInBlacklist}
+                  >
+                    Blacklist University
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {isBlacklistModalOpen ? (
+      {blacklistModalType ? (
         <div className='company-applicants-modal-overlay' role='dialog' aria-modal='true' aria-labelledby='company-applicants-modal-title'>
           <div className='company-applicants-modal-card'>
-            <h3 className='company-applicants-modal-title' id='company-applicants-modal-title'>Confirm University Blacklist</h3>
+            <h3 className='company-applicants-modal-title' id='company-applicants-modal-title'>
+              {blacklistModalType === 'student' ? 'Confirm Student Blacklist' : 'Confirm University Blacklist'}
+            </h3>
             <p className='company-applicants-modal-message'>
-              Add <strong>{selectedApplicant?.university}</strong> to the blacklist?
+              Add <strong>{blacklistModalType === 'student' ? selectedApplicant?.name : selectedApplicant?.university}</strong> to the blacklist?
             </p>
             <div className='company-applicants-modal-actions'>
               <button type='button' className='company-applicants-modal-cancel' onClick={closeBlacklistModal}>Cancel</button>
-              <button type='button' className='company-applicants-modal-confirm' onClick={confirmUniversityBlacklist}>Confirm</button>
+              <button type='button' className='company-applicants-modal-confirm' onClick={confirmBlacklist}>Confirm</button>
             </div>
           </div>
         </div>

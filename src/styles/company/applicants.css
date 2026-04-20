@@ -193,6 +193,7 @@
 }
 
 .details-btn-secondary,
+.details-btn-blacklist-student,
 .details-btn-accept,
 .details-btn-waitlist,
 .details-btn-reject {
@@ -208,7 +209,19 @@
 }
 
 .details-btn-blacklist-university {
-  width: 100%;
+  min-height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.1);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 1rem;
+  color: var(--company-text-primary);
+  cursor: pointer;
+}
+
+.details-btn-blacklist-student {
   min-height: 2rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -222,6 +235,7 @@
 }
 
 .details-btn-secondary:disabled,
+.details-btn-blacklist-student:disabled,
 .details-btn-accept:disabled,
 .details-btn-waitlist:disabled,
 .details-btn-reject:disabled,
@@ -232,6 +246,7 @@
 }
 
 .details-btn-secondary:disabled:hover,
+.details-btn-blacklist-student:disabled:hover,
 .details-btn-accept:disabled:hover,
 .details-btn-waitlist:disabled:hover,
 .details-btn-reject:disabled:hover,
@@ -249,6 +264,16 @@
 .details-btn-waitlist,
 .details-btn-reject {
   flex: 1;
+}
+
+.details-blacklist-actions {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.details-btn-blacklist-student,
+.details-btn-blacklist-university {
+  width: 50%;
 }
 
 .details-btn-accept {

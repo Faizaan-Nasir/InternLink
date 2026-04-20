@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function BlacklistList({ title, items, buttonLabel, onAdd }) {
+export default function BlacklistList({ title, items }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const activeItem = items.includes(selectedItem) ? selectedItem : (items[0] ?? null);
 
@@ -8,9 +8,6 @@ export default function BlacklistList({ title, items, buttonLabel, onAdd }) {
         <div className='company-info-blacklist-column'>
             <div className='company-info-blacklist-head'>
                 <h3 className='company-info-blacklist-title'>{title}</h3>
-                {buttonLabel && onAdd ? (
-                    <button type='button' className='company-info-add-btn' onClick={onAdd}>{buttonLabel}</button>
-                ) : null}
             </div>
 
             <div className='company-info-tabs-scroll'>

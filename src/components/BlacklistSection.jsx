@@ -1,6 +1,6 @@
 import BlacklistList from './BlacklistList';
 
-export default function BlacklistSection({ students, universities, onAddStudent }) {
+export default function BlacklistSection({ students, universities }) {
     return (
         <section className='company-info-blacklists'>
             <h2 className='company-info-section-title'>Blacklists</h2>
@@ -9,8 +9,6 @@ export default function BlacklistSection({ students, universities, onAddStudent 
                 <BlacklistList
                     title='Students Blacklist'
                     items={students}
-                    buttonLabel='Add Student'
-                    onAdd={onAddStudent}
                 />
                 <BlacklistList
                     title='Universities Blacklist'

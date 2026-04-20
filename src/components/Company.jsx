@@ -15,14 +15,19 @@ export default function Company({ supabase }) {
     sector: 'Loading...',
     location: 'Loading...',
   });
-  const [blacklistedUniversities, setBlacklistedUniversities] = useState([]);
+  const [blacklistedStudents, setBlacklistedStudents] = useState([
+    'Loading...'
+  ]);
+  const [blacklistedUniversities, setBlacklistedUniversities] = useState([
+    'Loading...'
+  ]);
 
   useEffect(() => {
     async function fetchCompanyData() {
       const { data, error } = await supabase
         .from('Companies')
         .select('*')
-        .single();
+        .maybeSingle();
       if (error) {
         console.error('Error fetching company data:', error);
       }
@@ -38,9 +43,42 @@ export default function Company({ supabase }) {
         setBlacklistedUniversities(data.map((row) => row.Universities.name));
       }
     }
+    async function fetchBlacklistedStudents() {
+      const { data, error } = await supabase
+        .from('student_blacklist')
+        .select('Students(name)');
+      if (error) {
+        console.error('Error fetching blacklisted students:', error);
+      } else {
+        setBlacklistedStudents(data.map((row) => row.Students.name));
+      }
+    }
+    fetchBlacklistedStudents();
     fetchBlacklistedUniversities();
     fetchCompanyData();
   }, [supabase]);
+
+  async function onBlacklistStudent(studentId, studentName) {
+    const { error } = await supabase.from('student_blacklist').insert({ sid: studentId, cid: companyData.cid });
+    if (error) {
+      console.error('Error blacklisting student:', error);
+      return { error };
+    } else {
+      setBlacklistedStudents((prev) => [...prev, studentName]);
+      return { error: null };
+    }
+  }
+
+  async function onBlacklistUniversity(universityId, universityName) {
+    const { error } = await supabase.from('university_blacklist').insert({ uid: universityId, cid: companyData.cid });
+    if (error) {
+      console.error('Error blacklisting university:', error);
+      return { error };
+    } else {
+      setBlacklistedUniversities((prev) => [...prev, universityName]);
+      return { error: null };
+    }
+  }
 
   const companyLinks = [
     { to: '/CreateJob', label: 'Create Job' },
@@ -65,7 +103,23 @@ export default function Company({ supabase }) {
         className='logo'
         onClick={() => supabase.auth.signOut()}
       />
-      {isApplicantsRoute ? <CompanyApplicants supabase={supabase} blacklistedUniversities={blacklistedUniversities} /> : isInfoRoute ? <CompanyInfo companyData={companyData} blacklistedUniversities={blacklistedUniversities} /> : <CreateInternship supabase={supabase} />}
+      {isApplicantsRoute ? (
+        <CompanyApplicants
+          supabase={supabase}
+          blacklistedUniversities={blacklistedUniversities}
+          blacklistedStudents={blacklistedStudents}
+          onBlacklistStudent={onBlacklistStudent}
+          onBlacklistUniversity={onBlacklistUniversity}
+        />
+      ) : isInfoRoute ? (
+        <CompanyInfo
+          companyData={companyData}
+          blacklistedUniversities={blacklistedUniversities}
+          blacklistedStudents={blacklistedStudents}
+        />
+      ) : (
+        <CreateInternship supabase={supabase} />
+      )}
     </div>
   );
 }
