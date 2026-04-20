@@ -166,6 +166,21 @@
     font-weight: 700;
 }
 
+.company-info-modal-message {
+    margin: 0;
+    color: var(--company-text-primary);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.company-info-modal-error {
+    margin: 0.6rem 0 0;
+    color: #fca5a5;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
 .company-info-modal-input {
     width: 100%;
     min-height: 2.25rem;
@@ -215,6 +230,12 @@
 
 .company-info-modal-confirm {
     background-color: var(--theme-blue);
+}
+
+.company-info-modal-cancel:disabled,
+.company-info-modal-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 @media (max-width: 1100px) {

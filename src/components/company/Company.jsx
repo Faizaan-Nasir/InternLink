@@ -80,6 +80,82 @@ export default function Company({ supabase }) {
     }
   }
 
+  async function onRemoveBlacklistedStudent(studentName) {
+    const normalizedStudentName = (studentName ?? '').trim();
+    if (!normalizedStudentName || !companyData?.cid) {
+      return { error: new Error('Missing student name or company id') };
+    }
+
+    const { data: studentRows, error: studentFetchError } = await supabase
+      .from('Students')
+      .select('rno')
+      .eq('name', normalizedStudentName);
+
+    if (studentFetchError) {
+      console.error('Error fetching student ids for blacklist removal:', studentFetchError);
+      return { error: studentFetchError };
+    }
+
+    const studentIds = (studentRows ?? []).map((student) => student.rno);
+
+    if (studentIds.length === 0) {
+      setBlacklistedStudents((prev) => prev.filter((name) => name !== normalizedStudentName));
+      return { error: null };
+    }
+
+    const { error } = await supabase
+      .from('student_blacklist')
+      .delete()
+      .eq('cid', companyData.cid)
+      .in('sid', studentIds);
+
+    if (error) {
+      console.error('Error removing student blacklist:', error);
+      return { error };
+    }
+
+    setBlacklistedStudents((prev) => prev.filter((name) => name !== normalizedStudentName));
+    return { error: null };
+  }
+
+  async function onRemoveBlacklistedUniversity(universityName) {
+    const normalizedUniversityName = (universityName ?? '').trim();
+    if (!normalizedUniversityName || !companyData?.cid) {
+      return { error: new Error('Missing university name or company id') };
+    }
+
+    const { data: universityRows, error: universityFetchError } = await supabase
+      .from('Universities')
+      .select('university_id')
+      .eq('name', normalizedUniversityName);
+
+    if (universityFetchError) {
+      console.error('Error fetching university ids for blacklist removal:', universityFetchError);
+      return { error: universityFetchError };
+    }
+
+    const universityIds = (universityRows ?? []).map((university) => university.university_id);
+
+    if (universityIds.length === 0) {
+      setBlacklistedUniversities((prev) => prev.filter((name) => name !== normalizedUniversityName));
+      return { error: null };
+    }
+
+    const { error } = await supabase
+      .from('university_blacklist')
+      .delete()
+      .eq('cid', companyData.cid)
+      .in('uid', universityIds);
+
+    if (error) {
+      console.error('Error removing university blacklist:', error);
+      return { error };
+    }
+
+    setBlacklistedUniversities((prev) => prev.filter((name) => name !== normalizedUniversityName));
+    return { error: null };
+  }
+
   const companyLinks = [
     { to: '/CreateJob', label: 'Create Job' },
     { to: '/Applicants', label: 'Applicants' },
@@ -116,6 +192,8 @@ export default function Company({ supabase }) {
           companyData={companyData}
           blacklistedUniversities={blacklistedUniversities}
           blacklistedStudents={blacklistedStudents}
+          onRemoveBlacklistedStudent={onRemoveBlacklistedStudent}
+          onRemoveBlacklistedUniversity={onRemoveBlacklistedUniversity}
         />
       ) : (
         <CreateInternship supabase={supabase} />
