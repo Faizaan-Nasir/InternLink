@@ -20,8 +20,8 @@ Universities get a centralized view of student internship activity, including wh
 ## What I learnt
 
 - I learned what `async` and `await` mean in JavaScript and how they help write clearer asynchronous code when working with API calls.
-- I learned React hooks like `useState` and `useMemo`.
-- My understanding of `useState` is that it helps store frontend state and trigger UI updates when async data arrives, instead of manually re-rendering or repeatedly refetching data.
+- I learned React hooks like `useEffect` and `useMemo`.
+- My understanding of `useEffect` is that it is used to handle side effects like fetching data after a component renders, so that asynchronous operations can run at the right time without causing repeated API calls on every render.
 - I learned that `useMemo` helps avoid unnecessary recalculations by memoizing derived values when dependencies do not change.
 - Through Supabase, I learned practical concepts in PostgreSQL, database design, authentication flow, API calling patterns, and Row Level Security (RLS) policies.
 
