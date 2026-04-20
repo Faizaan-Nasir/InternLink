@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../assets/logo.png';
+import Logo from '../assets/Logo.png';
 
 async function tryLogin(supabase, email, password) {
   if (!supabase) {
