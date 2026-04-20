@@ -75,8 +75,12 @@ async function handleApply(supabase, jobId) {
     return { status: 'error' };
   }
 
-  const response = await supabase.from('Applications').select('*').eq('student_id', rno).eq('internship_id', jobId).single();
-  if (response.data) {
+  const { data: response, error: responseError } = await supabase.from('Applications').select('*').eq('student_id', rno).eq('internship_id', jobId).maybeSingle();
+  if (responseError) {
+    console.error('Error fetching application data:', responseError);
+    return { status: 'error' };
+  }
+  if (response) {
     console.warn('Already applied for this job');
     return { status: 'already_applied' };
   }
@@ -89,6 +93,9 @@ async function handleApply(supabase, jobId) {
 
   if (error) {
     console.error('Error applying for job:', error);
+    if (error.code === '42501') {
+      return { status: 'blacklisted' };
+    }
     return { status: 'error' };
   } else {
     console.log('Successfully applied for job:', data);

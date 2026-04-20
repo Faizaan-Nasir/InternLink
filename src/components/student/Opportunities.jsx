@@ -144,6 +144,17 @@ export default function Opportunities({ supabase }) {
                         resultType: 'already_applied',
                     };
                 });
+            } else if (result?.status === 'blacklisted') {
+                setApplyConfirmation((previousConfirmation) => {
+                    if (!previousConfirmation) {
+                        return null;
+                    }
+                    return {
+                        ...previousConfirmation,
+                        phase: 'result',
+                        resultType: 'blacklisted',
+                    };
+                });
             } else {
                 setApplyConfirmation((previousConfirmation) => {
                     if (!previousConfirmation) {
@@ -245,22 +256,31 @@ export default function Opportunities({ supabase }) {
                                     {applyConfirmation.resultType === 'applied'
                                         ? (
                                             <>
-                                                Your application for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong> has been submitted.
+                                                Your application for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong> has been submitted.<br />
+                                                All the best. You will get a response from the company soon.
                                             </>
                                         )
                                         : applyConfirmation.resultType === 'already_applied'
                                             ? (
                                                 <>
-                                                    You have already applied for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong>.
+                                                    You have already applied for <strong>{applyConfirmation.title}</strong> at <strong>{applyConfirmation.company}</strong>.<br />
+                                                    All the best. You will get a response from the company soon.
                                                 </>
                                             )
-                                            : (
-                                                <>
-                                                    We could not process your application right now. Please try again in a while.
-                                                </>
-                                            )}
+                                            : applyConfirmation.resultType === 'blacklisted'
+                                                ? (
+                                                    <>
+                                                        Your account/university has been blacklisted by the company, and you cannot apply for it.<br />
+                                                        If you believe this is a mistake, please contact support.
+                                                    </>
+                                                )
+                                                :
+                                                (
+                                                    <>
+                                                        We could not process your application right now. Please try again in a while.
+                                                    </>
+                                                )}
                                 </p>
-                                <p className='apply-confirm-note'>All the best. You will get a response from the company soon.</p>
                                 <div className='apply-confirm-actions'>
                                     <button
                                         className='apply-confirm-submit'
