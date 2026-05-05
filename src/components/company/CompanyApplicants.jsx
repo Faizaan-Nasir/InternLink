@@ -1,94 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import SearchBar from '../SearchBar';
-import { GenerateSummary } from '../../../utils/summarizer';
 
-export default function CompanyApplicants({ supabase, blacklistedUniversities, blacklistedStudents, onBlacklistStudent, onBlacklistUniversity }) {
+export default function CompanyApplicants({ supabase, blacklistedUniversities, blacklistedStudents, onBlacklistStudent, onBlacklistUniversity, jobs, aiSummariesByApplicant, decisionByApplication, setDecisionByApplication }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState(null);
-  const [decisionByApplication, setDecisionByApplication] = useState({});
   const [blacklistModalType, setBlacklistModalType] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [aiSummariesByApplicant, setAISummariesByApplicant] = useState({});
-
-  useEffect(() => {
-    const getCompanyJobs = async () => {
-      const { data, error } = await supabase.from('Internships').select('id,role,Applications(student_id,applied_time),Companies(cid,name)');
-      if (error) {
-        console.error('Error fetching company jobs:', error);
-      } else {
-        for (const job of data) {
-          for (const app of job.Applications) {
-            const { data: studentData, error: studentError } = await supabase.from('Students').select('name,branch,year,cgpa,ph,university,university_id,Student_Skills(Skills(name)),email').eq('rno', app.student_id).maybeSingle();
-            const { data: acceptedResponse, error: responseError } = await supabase.from('Responses').select('decision').eq('student_id', app.student_id).eq('internship_id', job.id).maybeSingle();
-            if (responseError) {
-              console.error(`Error fetching response for applicant ${app.student_id}:`, responseError);
-            } else {
-              const applicationKey = `${job.id}:${app.student_id}`;
-              setDecisionByApplication((previousDecisions) => ({
-                ...previousDecisions,
-                [applicationKey]: acceptedResponse?.decision ?? null
-              }));
-            }
-            if (studentError) {
-              console.error(`Error fetching student data for applicant ${app.student_id}:`, studentError);
-            } else {
-              app.name = studentData.name;
-              app.branch = studentData.branch;
-              app.year = studentData.year;
-              app.cgpa = studentData.cgpa;
-              app.phone = studentData.ph;
-              app.university = studentData.university;
-              app.email = studentData.email;
-              app.skills = studentData.Student_Skills.map((skill) => skill.Skills.name);
-              app.university_id = studentData.university_id;
-              app.cid = job.Companies.cid;
-              app.companyName = job.Companies.name;
-            }
-          }
-        }
-      }
-      const temporaryJobs = data.map((job) => ({
-        id: job.id,
-        title: job.role,
-        companyName: job.companyName,
-        applicantCount: job.Applications.length,
-        applicants: job.Applications.map((app) => ({
-          id: app.student_id,
-          appliedAgo: `${Math.floor((Date.now() - new Date(app.applied_time).getTime()) / (1000 * 60 * 60))}h ago`,
-          name: app.name,
-          skills: app.skills,
-          cgpa: app.cgpa,
-          branch: app.branch,
-          year: app.year,
-          phone: app.phone,
-          email: app.email,
-          university: app.university,
-          university_id: app.university_id,
-          cid: app.cid,
-        }))
-      }))
-      setJobs(temporaryJobs);
-      for (const job of temporaryJobs) {
-        for (const applicant of job.applicants) {
-          const aiSummary = await GenerateSummary({
-            branch: applicant.branch,
-            year: applicant.year,
-            university: applicant.university,
-            cgpa: applicant.cgpa,
-            skills: applicant.skills,
-            company: job.companyName,
-            role: job.role
-          });
-          setAISummariesByApplicant((previousSummaries) => ({
-            ...previousSummaries,
-            [`${applicant.id}:${job.id}`]: aiSummary
-          }));
-        }
-      }
-    };
-    getCompanyJobs();
-  }, [supabase]);
 
   const filteredJobs = useMemo(() => {
     const normalizedQuery = searchTerm.trim().toLowerCase();

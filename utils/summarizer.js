@@ -12,8 +12,8 @@ export async function GenerateSummary(studentData) {
         Do not assume any other information. 
         Hence summarize this student's profile in not more than 100 words without any text formatting.
 
-        [ Example]
-        For example: The student demonstrates (very) strong academic performance which stands out the most. They also have a lot of skills mentioned making them a good fit for this front-end intern role at OpenAI. However, they are a sophomore and they come from a not so well known university, they have also mentioned a few too many varied skills which may require further validation through projects and experience, and that may also mean the student is unsure of their domain.
+        [ Example ]
+        For example: The student demonstrates (very) strong academic performance which stands out the most. They also have a lot of skills mentioned making them a good fit for this front-end intern role at OpenAI. However, they are a sophomore and they come from a not so well known university, they have also mentioned a few too many varied skills which may require further validation through projects and experience, and that may also mean the student is unsure of their domain. For the role of an AI engineer intern, the student may be a good candidate if they do have some experience or projects.
 
         [ Student Data ]
         The student details are mentioned as follows:
@@ -28,6 +28,7 @@ export async function GenerateSummary(studentData) {
         Company: ${studentData.company || "N/A"}
         Role: ${studentData.role || "N/A"}
 `;
+    // console.log(prompt);
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

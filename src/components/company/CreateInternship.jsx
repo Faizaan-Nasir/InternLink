@@ -12,7 +12,7 @@ const INITIAL_FORM = {
   skills_required: '',
 };
 
-export default function CreateInternship({ supabase }) {
+export default function CreateInternship({ supabase, setJobs, companyName }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalState, setModalState] = useState(null);
@@ -98,6 +98,14 @@ export default function CreateInternship({ supabase }) {
 
       setModalState({ phase: 'success' });
       resetForm();
+      const temporaryJob = {
+        id: internshipData.id,
+        title: internshipData.role,
+        companyName: companyName,
+        applicantCount: 0,
+        applicants: []
+      };
+      setJobs((prevJobs) => [...prevJobs, temporaryJob]);
     } catch (error) {
       console.error('Error creating internship:', error);
       setModalState({
